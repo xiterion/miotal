@@ -6,24 +6,25 @@ using BitBandEnabled = std::true_type;
 #include <port/ARM/Cortex/M4/Freescale/register.hpp>
 
 namespace port {
-namespace K22 {
 
-template <std::uint32_t address>
-struct PORTx_PCRn : public hal::Register<address>
+struct PORTx_PCRn : public hal::Register
 {
-    W1C<address, 24> ISF;
-//    Bits<address, 23, 4> IRQC;
-    Bit<address, 15> LK;
-//    Bits<address, 11, 4> MUX;
-    Bit<address, 6> DSE;
-    Bit<address, 5> ODE;
-    Bit<address, 4> PFE;
-    Bit<address, 2> SRE;
-    Bit<address, 1> PE;
-    Bit<address, 0> PS;
+    constexpr PORTx_PCRn(std::uint32_t address) : hal::Register(address),
+        ISF(this), LK(this), DSE(this), ODE(this),
+        PFE(this), SRE(this), PE(this), PS(this) {};
+
+    W1C<24> ISF;
+//    Bits<Address, 23, 4> IRQC;
+    Bit<15> LK;
+//    Bits<Address, 11, 4> MUX;
+    Bit<6> DSE;
+    Bit<5> ODE;
+    Bit<4> PFE;
+    Bit<2> SRE;
+    Bit<1> PE;
+    Bit<0> PS;
 };
 
-PORTx_PCRn<0x40049000> PORTA_PCR0;
+PORTx_PCRn PORTA_PCR0(0x40049000);
 
-} // namespace K22
 } // namespace port

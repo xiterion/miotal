@@ -5,5 +5,5 @@
 int main(void)
 {
     bool foo;
-    port::K22::PORTA_PCR0.LK.set();
+    port::PORTA_PCR0.ISF.clear();
 }

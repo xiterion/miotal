@@ -26,22 +26,28 @@ constexpr std::uint32_t BitBandAddress(std::uint32_t address, std::uint32_t bit_
     return 0;
 }
 
-template <std::uint32_t address, std::uint32_t bit>
-struct BitBandedBit : private hal::Register<BitBandAddress(address, bit)>
+template <std::uint32_t bit>
+class BitBandedBit
 {
-    bool read() const { return hal::Register<BitBandAddress(address, bit)>::read(); }
-    BitBandedBit<address, bit>& set() { return write(1); }
-    BitBandedBit<address, bit>& clear() { return write(0); }
-    BitBandedBit<address, bit>& write(const std::uint32_t& value)
+public:
+    constexpr BitBandedBit(hal::Register* reg) :
+        reg(hal::Register(BitBandAddress(reg->address, bit))) {};
+
+    bool read() const { return reg.read(); }
+    BitBandedBit<bit>& set() { return write(1); }
+    BitBandedBit<bit>& clear() { return write(0); }
+    BitBandedBit<bit>& write(const std::uint32_t& value)
     {
-        hal::Register<BitBandAddress(address, bit)>::write(value);
+        reg.write(value);
         return *this;
     }
+private:
+    hal::Register reg;
 };
 
-template <std::uint32_t address, std::uint32_t bit>
+template <std::uint32_t bit>
 using Bit = typename std::conditional<BitBandEnabled::value,
-                                      BitBandedBit<address, bit>,
-                                      hal::Bit<address, bit>>::type;
+                                      BitBandedBit<bit>,
+                                      hal::Bit<bit>>::type;
 
 } // namespace port
