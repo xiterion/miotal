@@ -4,15 +4,14 @@
 
 namespace port {
 
-template <uint32_t bit>
-struct W1C : private Bit<bit>
+struct W1C : private Bit
 {
-    constexpr W1C(hal::Register* reg) : Bit<bit>(reg) {};
+    constexpr W1C(hal::Register* reg, std::uint32_t bit) : Bit(reg, bit) {};
 
-    using Bit<bit>::read;
-    W1C<bit>& clear()
+    using Bit::read;
+    W1C& clear()
     {
-        return static_cast<W1C<bit>&>(Bit<bit>::set());
+        return static_cast<W1C&>(Bit::set());
     }
 };
 

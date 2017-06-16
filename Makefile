@@ -82,6 +82,8 @@ $(NAME).elf: $(OBJECTS)
 
 -include $(DEPENDENCY_FILES)
 
+$(OBJECTS) $(DEPENDENCY_FILES): Makefile
+
 .PHONY: clean
 clean:
 	rm -f $(NAME).elf $(OBJECTS)
