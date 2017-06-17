@@ -6,13 +6,18 @@ namespace port {
 
 struct W1C : private Bit
 {
-    constexpr W1C(hal::Register* reg, std::uint32_t bit) : Bit(reg, bit) {};
+    inline constexpr W1C(hal::Register* reg, std::uint32_t bit);
 
     using Bit::read;
-    W1C& clear()
-    {
-        return static_cast<W1C&>(Bit::set());
-    }
+    inline void clear();
 };
+
+constexpr W1C::W1C(hal::Register* reg, std::uint32_t bit) :
+    Bit(reg, bit) {};
+
+void W1C::clear()
+{
+    Bit::set();
+}
 
 } // namespace port

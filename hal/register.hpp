@@ -11,7 +11,7 @@ public:
     inline constexpr Register(const Register& reg);
 
     inline std::uint32_t read() const; 
-    inline Register& write(const std::uint32_t& value);
+    inline void write(const std::uint32_t& value);
 
     const std::uint32_t address;
 };
@@ -22,14 +22,14 @@ public:
     inline constexpr Bit(Register* reg, std::uint32_t bit);
 
     inline bool read() const;
-    inline Bit& set();
-    inline Bit& clear();
-    inline Bit& write(bool value);
+    inline void set();
+    inline void clear();
+    inline void write(bool value);
 private:
     Register reg;
     const std::uint32_t mask;
 
-    inline Bit& write(std::uint32_t value);
+    inline void write(std::uint32_t value);
 };
 
 class Bits
@@ -38,7 +38,7 @@ public:
     inline constexpr Bits(Register* reg, std::uint32_t start_bit, std::uint32_t end_bit);
 
     inline std::uint32_t read() const;
-    inline Bits& write(std::uint32_t value);
+    inline void write(std::uint32_t value);
 
 private:
     Register reg;
@@ -59,10 +59,9 @@ std::uint32_t Register::read() const
     return *reinterpret_cast<volatile std::uint32_t*>(address);
 }
 
-Register& Register::write(const std::uint32_t& value)
+void Register::write(const std::uint32_t& value)
 {
     *reinterpret_cast<volatile std::uint32_t*>(address) = value;
-    return *this;
 }
 
 // Bit implementation
@@ -75,25 +74,24 @@ bool Bit::read() const
     return reg.read() & mask;
 }
 
-Bit& Bit::set()
+void Bit::set()
 {
-    return write(reg.read() | mask);
+    write(reg.read() | mask);
 }
 
-Bit& Bit::clear()
+void Bit::clear()
 {
-    return write(reg.read() & ~mask);
+    write(reg.read() & ~mask);
 }
 
-Bit& Bit::write(bool value)
+void Bit::write(bool value)
 {
-    return value ? set() : clear();
+    value ? set() : clear();
 }
 
-Bit& Bit::write(std::uint32_t value)
+void Bit::write(std::uint32_t value)
 {
     reg.write(value);
-    return *this;
 }
 
 // Bits implementation
@@ -108,10 +106,9 @@ std::uint32_t Bits::read() const
     return (reg.read() & mask) >> shift;
 }
 
-Bits& Bits::write(std::uint32_t value)
+void Bits::write(std::uint32_t value)
 {
     reg.write((reg.read() & ~mask) | (value << shift));
-    return *this;
 }
 
 constexpr std::uint32_t Bits::bitmask(std::uint32_t start_bit, std::uint32_t end_bit)
