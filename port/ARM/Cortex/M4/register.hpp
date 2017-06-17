@@ -6,6 +6,9 @@
 
 namespace port {
 
+using Register = hal::Register<std::uint32_t>;
+using Bits = hal::Bits<std::uint32_t>;
+
 constexpr std::uint32_t bit_word_address(std::uint32_t bit_band_base,
                                          std::uint32_t byte_offset,
                                          std::uint32_t bit_number)
@@ -29,22 +32,22 @@ constexpr std::uint32_t BitBandAddress(std::uint32_t address, std::uint32_t bit_
 class BitBandedBit
 {
 public:
-    inline constexpr BitBandedBit(hal::Register* reg, std::uint32_t bit);
+    inline constexpr BitBandedBit(Register* reg, std::uint32_t bit);
 
     inline bool read() const;
     inline void set();
     inline void clear();
     inline void write(std::uint32_t value);
 private:
-    hal::Register reg;
+    Register reg;
 };
 
 using Bit = typename std::conditional<BitBandEnabled::value,
                                       BitBandedBit,
-                                      hal::Bit>::type;
+                                      hal::Bit<std::uint32_t>>::type;
 
-constexpr BitBandedBit::BitBandedBit(hal::Register* reg, std::uint32_t bit) :
-    reg(hal::Register(BitBandAddress(reg->address, bit))) {};
+constexpr BitBandedBit::BitBandedBit(Register* reg, std::uint32_t bit) :
+    reg(Register(BitBandAddress(reg->address, bit))) {};
 
 bool BitBandedBit::read() const
 {

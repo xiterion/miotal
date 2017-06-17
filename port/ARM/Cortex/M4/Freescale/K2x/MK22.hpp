@@ -7,11 +7,9 @@ using BitBandEnabled = std::true_type;
 
 namespace port {
 
-using hal::Bits;
-
-struct PORTx_PCRn : public hal::Register
+struct PORTx_PCRn : public Register
 {
-    constexpr PORTx_PCRn(std::uint32_t address) : hal::Register(address),
+    constexpr PORTx_PCRn(std::uint32_t address) : Register(address),
         ISF(this, 24), IRQC(this, 23, 20), LK(this, 15), MUX(this, 11, 8),
         DSE(this, 6), ODE(this, 5), PFE(this, 4), SRE(this, 2), PE(this, 1), PS(this, 0) {};
 
