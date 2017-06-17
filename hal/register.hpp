@@ -8,6 +8,7 @@ class Register
 {
 public:
     constexpr Register(std::uint32_t address) : address(address) {};
+    constexpr Register(const Register& reg) : address(reg.address) {};
 
     std::uint32_t read() const { return *reinterpret_cast<volatile std::uint32_t*>(address); }
     Register& write(const std::uint32_t& value)
@@ -23,7 +24,7 @@ class Bit
 {
 public:
     constexpr Bit(Register* reg, std::uint32_t bit) :
-        reg(Register(reg->address)), mask(1 << bit) {};
+        reg(Register(*reg)), mask(1 << bit) {};
 
     bool read() const { return reg.read() & mask; }
     Bit& set() { return write(reg.read() | mask); }
@@ -39,7 +40,7 @@ class Bits
 {
 public:
     constexpr Bits(Register* reg, std::uint32_t start_bit, std::uint32_t end_bit) :
-        reg(Register(reg->address)), shift(end_bit),
+        reg(Register(*reg)), shift(end_bit),
         mask(bitmask(start_bit, end_bit)) {};
 
     std::uint32_t read() const { return (reg.read() & mask) >> shift; }
