@@ -7,15 +7,11 @@ namespace hal {
 class Register
 {
 public:
-    constexpr Register(std::uint32_t address) : address(address) {};
-    constexpr Register(const Register& reg) : address(reg.address) {};
+    inline constexpr Register(std::uint32_t address);
+    inline constexpr Register(const Register& reg);
 
-    std::uint32_t read() const { return *reinterpret_cast<volatile std::uint32_t*>(address); }
-    Register& write(const std::uint32_t& value)
-    {
-        *reinterpret_cast<volatile std::uint32_t*>(address) = value;
-        return *this;
-    }
+    inline std::uint32_t read() const; 
+    inline Register& write(const std::uint32_t& value);
 
     const std::uint32_t address;
 };
@@ -23,41 +19,104 @@ public:
 class Bit
 {
 public:
-    constexpr Bit(Register* reg, std::uint32_t bit) :
-        reg(Register(*reg)), mask(1 << bit) {};
+    inline constexpr Bit(Register* reg, std::uint32_t bit);
 
-    bool read() const { return reg.read() & mask; }
-    Bit& set() { return write(reg.read() | mask); }
-    Bit& clear() { return write(reg.read() & ~mask); }
-    Bit& write(bool value) { return value ? set() : clear(); }
+    inline bool read() const;
+    inline Bit& set();
+    inline Bit& clear();
+    inline Bit& write(bool value);
 private:
-    Bit& write(std::uint32_t value) { reg.write(value); return *this; }
     Register reg;
     const std::uint32_t mask;
+
+    inline Bit& write(std::uint32_t value);
 };
 
 class Bits
 {
 public:
-    constexpr Bits(Register* reg, std::uint32_t start_bit, std::uint32_t end_bit) :
-        reg(Register(*reg)), shift(end_bit),
-        mask(bitmask(start_bit, end_bit)) {};
+    inline constexpr Bits(Register* reg, std::uint32_t start_bit, std::uint32_t end_bit);
 
-    std::uint32_t read() const { return (reg.read() & mask) >> shift; }
-    void write(std::uint32_t value)
-    {
-        reg.write((reg.read() & ~mask) | (value << shift));
-    }
+    inline std::uint32_t read() const;
+    inline Bits& write(std::uint32_t value);
 
 private:
     Register reg;
     const std::uint32_t mask;
     const std::uint32_t shift;
 
-    static constexpr std::uint32_t bitmask(std::uint32_t start_bit, std::uint32_t end_bit)
-    {
-        return ((1 << (1 + start_bit - end_bit)) - 1) << end_bit;
-    }
+    static constexpr std::uint32_t bitmask(std::uint32_t start_bit, std::uint32_t end_bit);
 };
+
+
+// Register implementation
+
+constexpr Register::Register(std::uint32_t address) : address(address) {};
+constexpr Register::Register(const Register& reg) : address(reg.address) {};
+
+std::uint32_t Register::read() const
+{
+    return *reinterpret_cast<volatile std::uint32_t*>(address);
+}
+
+Register& Register::write(const std::uint32_t& value)
+{
+    *reinterpret_cast<volatile std::uint32_t*>(address) = value;
+    return *this;
+}
+
+// Bit implementation
+
+constexpr Bit::Bit(Register* reg, std::uint32_t bit) :
+        reg(Register(*reg)), mask(1 << bit) {};
+
+bool Bit::read() const
+{
+    return reg.read() & mask;
+}
+
+Bit& Bit::set()
+{
+    return write(reg.read() | mask);
+}
+
+Bit& Bit::clear()
+{
+    return write(reg.read() & ~mask);
+}
+
+Bit& Bit::write(bool value)
+{
+    return value ? set() : clear();
+}
+
+Bit& Bit::write(std::uint32_t value)
+{
+    reg.write(value);
+    return *this;
+}
+
+// Bits implementation
+
+constexpr Bits::Bits(Register* reg, std::uint32_t start_bit, std::uint32_t end_bit) :
+    reg(Register(*reg)),
+    shift(end_bit),
+    mask(bitmask(start_bit, end_bit)) {};
+
+std::uint32_t Bits::read() const
+{
+    return (reg.read() & mask) >> shift;
+}
+
+Bits& Bits::write(std::uint32_t value)
+{
+    reg.write((reg.read() & ~mask) | (value << shift));
+    return *this;
+}
+
+constexpr std::uint32_t Bits::bitmask(std::uint32_t start_bit, std::uint32_t end_bit)
+{
+    return ((1 << (1 + start_bit - end_bit)) - 1) << end_bit;
+}
 
 } // namespace hal
