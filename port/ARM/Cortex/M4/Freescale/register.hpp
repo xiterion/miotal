@@ -9,24 +9,14 @@ namespace port {
 template <typename T>
 class Register : public hal::Register<T>
 {
-private:
-    class BitBandedBit;
 public:
     using hal::Register<T>::Register;
+    class BitBandedBit;
     using Bit = typename std::conditional<BitBandEnabled::value,
                                           BitBandedBit,
                                           typename hal::Register<T>::Bit>::type;
 
-    struct W1C : private Bit
-    {
-        inline constexpr W1C(Register* reg, std::uint32_t bit);
-
-        using Bit::read;
-        inline void clear();
-    };
-
-private:
-    class BitBandedBit
+    class BitBandedBit : private hal::Register<T>::Bit
     {
     public:
         inline constexpr BitBandedBit(Register* reg, std::uint32_t bit);
@@ -35,6 +25,8 @@ private:
         inline void set();
         inline void clear();
         inline void write(std::uint32_t value);
+
+        using hal::Register<T>::Bit::mask;
     private:
         Register reg;
 
@@ -44,12 +36,21 @@ private:
         inline constexpr std::uint32_t BitBandAddress(std::uint32_t address,
                                                       std::uint32_t bit_number);
     };
+
+    struct W1C : private Bit
+    {
+        inline constexpr W1C(Register* reg, std::uint32_t bit);
+
+        using Bit::read;
+        inline void clear();
+    };
+
 };
 
 
 template <typename T>
 constexpr Register<T>::BitBandedBit::BitBandedBit(Register* reg, std::uint32_t bit) :
-    reg(Register(BitBandAddress(reg->address, bit))) {};
+    hal::Register<T>::Bit(reg, bit), reg(Register(BitBandAddress(reg->address, bit))) {};
 
 template <typename T>
 bool Register<T>::BitBandedBit::read() const

@@ -25,9 +25,10 @@ public:
         inline void set();
         inline void clear();
         inline void write(bool value);
+
+        const T mask;
     private:
         Register<T> reg;
-        const T mask;
 
         inline void write(T value);
     };

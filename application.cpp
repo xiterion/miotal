@@ -10,6 +10,7 @@
 int main(void)
 {
     std::uint32_t foo;
-    port::PORTA_PCR0.ISF.read();
     port::PORTA_PCR0.ISF.clear();
+    port::PORTA_PCR0.write(
+            port::PORTA_PCR0.initializer(true, false, true, false, true, false, true));
 }
