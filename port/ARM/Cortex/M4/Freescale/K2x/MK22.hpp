@@ -5,8 +5,6 @@
 using BitBandEnabled = std::false_type;
 #include <port/ARM/Cortex/M4/Freescale/register.hpp>
 
-namespace port {
-
 struct PORTx_PCRn : public Register<std::uint32_t>
 {
     constexpr PORTx_PCRn(std::uint32_t address) : Register<std::uint32_t>(address),
@@ -72,5 +70,3 @@ PORTx_PCRn PORTA_PCR28(0x40049070);
 PORTx_PCRn PORTA_PCR29(0x40049074);
 PORTx_PCRn PORTA_PCR30(0x40049078);
 PORTx_PCRn PORTA_PCR31(0x4004907C);
-
-} // namespace port
