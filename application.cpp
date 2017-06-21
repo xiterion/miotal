@@ -4,5 +4,5 @@
 int main(void)
 {
     std::uint32_t foo;
-    PORTA_PCR0.LK.clear();
+    port::PORTA_PCR0.LK.clear();
 }

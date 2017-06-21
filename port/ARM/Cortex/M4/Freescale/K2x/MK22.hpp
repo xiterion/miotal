@@ -2,12 +2,14 @@
 
 #include <type_traits>
 
-using BitBandEnabled = std::false_type;
+using BitBandEnabled = std::true_type;
 #include <port/ARM/Cortex/M4/Freescale/register.hpp>
 
-struct PORTx_PCRn : public Register<std::uint32_t>
+namespace port {
+
+struct PORTx_PCRn : public Register
 {
-    constexpr PORTx_PCRn(std::uint32_t address) : Register<std::uint32_t>(address),
+    constexpr PORTx_PCRn(std::uint32_t address) : Register(address),
         ISF(this, 24), IRQC(this, 23, 20), LK(this, 15), MUX(this, 11, 8),
         DSE(this, 6), ODE(this, 5), PFE(this, 4), SRE(this, 2), PE(this, 1), PS(this, 0) {};
 
@@ -70,3 +72,5 @@ PORTx_PCRn PORTA_PCR28(0x40049070);
 PORTx_PCRn PORTA_PCR29(0x40049074);
 PORTx_PCRn PORTA_PCR30(0x40049078);
 PORTx_PCRn PORTA_PCR31(0x4004907C);
+
+} // namespace port

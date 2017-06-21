@@ -2,22 +2,25 @@
 
 #include <type_traits>
 
-#include <hal/register.hpp>
+#include <port/generic/register.hpp>
 
-template <typename T>
-class BitBandedBit : private DefaultBit<T>
+namespace port {
+
+using Register = generic::Register<std::uint32_t>;
+
+class BitBandedBit : private generic::Bit<std::uint32_t>
 {
 public:
-    inline constexpr BitBandedBit(MemoryLocation<T>* reg, std::uint32_t bit);
+    inline constexpr BitBandedBit(Register* reg, std::uint32_t bit);
 
     inline bool read() const;
     inline void set();
     inline void clear();
     inline void write(std::uint32_t value);
 
-    using DefaultBit<T>::mask;
+    using generic::Bit<std::uint32_t>::mask;
 private:
-    MemoryLocation<T> reg;
+    Register reg;
 
     inline constexpr std::uint32_t bit_word_address(std::uint32_t bit_band_base,
                                                     std::uint32_t byte_offset,
@@ -26,72 +29,56 @@ private:
                                                   std::uint32_t bit_number);
 };
 
-template <typename T>
 using Bit = typename std::conditional<BitBandEnabled::value,
-                                      BitBandedBit<T>,
-                                      DefaultBit<T>>::type;
+                                      BitBandedBit,
+                                      generic::Bit<std::uint32_t>>::type;
 
-template <typename T>
-struct W1C : private Bit<T>
+struct W1C : private port::Bit
 {
-    inline constexpr W1C(MemoryLocation<T>* reg, std::uint32_t bit);
+    inline constexpr W1C(Register* reg, std::uint32_t bit);
 
-    using Bit<T>::read;
+    using port::Bit::read;
     inline void clear();
 };
 
-template <typename T>
-class Register : public MemoryLocation<T>
-{
-public:
-    using MemoryLocation<T>::MemoryLocation;
-    using Bit = ::Bit<T>;
-    using Bits = ::Bits<T>;
-    using W1C = ::W1C<T>;
-};
+using Bits = generic::Bits<std::uint32_t>;
 
 // BitBandedBit implementation
 
-template <typename T>
-constexpr BitBandedBit<T>::BitBandedBit(MemoryLocation<T>* reg, std::uint32_t bit) :
-    DefaultBit<T>(reg, bit), reg(MemoryLocation<T>(BitBandAddress(reg->address, bit))) {};
+constexpr BitBandedBit::BitBandedBit(Register* reg, std::uint32_t bit) :
+    generic::Bit<std::uint32_t>(reg, bit),
+    reg(Register(BitBandAddress(reg->address, bit))) {};
 
-template <typename T>
-bool BitBandedBit<T>::read() const
+bool BitBandedBit::read() const
 {
     return reg.read();
 }
 
-template <typename T>
-void BitBandedBit<T>::set()
+void BitBandedBit::set()
 {
     write(1);
 }
 
-template <typename T>
-void BitBandedBit<T>::clear()
+void BitBandedBit::clear()
 {
     write(0);
 }
 
-template <typename T>
-void BitBandedBit<T>::write(std::uint32_t value)
+void BitBandedBit::write(std::uint32_t value)
 {
     reg.write(value);
 }
 
-template <typename T>
 constexpr std::uint32_t
-BitBandedBit<T>::bit_word_address(std::uint32_t bit_band_base,
-                                  std::uint32_t byte_offset,
-                                  std::uint32_t bit_number)
+BitBandedBit::bit_word_address(std::uint32_t bit_band_base,
+                               std::uint32_t byte_offset,
+                               std::uint32_t bit_number)
 {
     return bit_band_base + ((byte_offset * 32) + (bit_number * 4));
 }
 
-template <typename T>
 constexpr std::uint32_t
-BitBandedBit<T>::BitBandAddress(std::uint32_t address, std::uint32_t bit_number)
+BitBandedBit::BitBandAddress(std::uint32_t address, std::uint32_t bit_number)
 {
     if((0x20000000 <= address) and (address <= 0x200FFFFF))
     {
@@ -106,12 +93,12 @@ BitBandedBit<T>::BitBandAddress(std::uint32_t address, std::uint32_t bit_number)
 
 // W1C implementation
 
-template <typename T>
-constexpr W1C<T>::W1C(MemoryLocation<T>* reg, std::uint32_t bit) :
-    Bit<T>(reg, bit) {};
+constexpr W1C::W1C(Register* reg, std::uint32_t bit) :
+    port::Bit(reg, bit) {};
 
-template <typename T>
-void W1C<T>::clear()
+void W1C::clear()
 {
-    Bit<T>::set();
+    port::Bit::set();
 }
+
+} // namespace port
