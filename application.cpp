@@ -3,6 +3,7 @@
 
 int main(void)
 {
-    std::uint32_t foo;
-    port::PORTA_PCR0.LK.clear();
+    volatile std::uint32_t foo;
+    port::PORTA_PCR0.write(port::PORTA_PCR0.initializer(
+                3, false, 1, false, true, false, false, true, false));
 }
