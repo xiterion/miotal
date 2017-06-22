@@ -29,8 +29,6 @@ public:
     void clear()           { reg.write(reg.read() & ~mask); }
     void write(bool value) { value ? set() : clear(); }
 
-    constexpr T bitmask(bool value) { return value ? mask : 0; }
-
 private:
     Register<T> reg;
     const T mask;
@@ -44,7 +42,6 @@ public:
 
     std::uint32_t read() const      { return (reg.read() & mask) >> shift; }
     void write(std::uint32_t value) { reg.write((reg.read() & ~mask) | bitmask(value)); }
-    constexpr T bitmask(T value)    { return (value << shift) & mask; }
 
 private:
     Register<T> reg;
@@ -59,13 +56,13 @@ private:
 
 template <typename T>
 constexpr Bit<T>::Bit(Register<T>* reg, std::uint32_t bit) :
-        reg(Register<T>(*reg)), mask(1 << bit) {};
+    reg(*reg), mask(1 << bit) {};
 
 // Bits implementation
 
 template <typename T>
 constexpr Bits<T>::Bits(Register<T>* reg, std::uint32_t start_bit, std::uint32_t end_bit) :
-    reg(Register<T>(*reg)), shift(end_bit), mask(bitmask(start_bit, end_bit)) {};
+    reg(*reg), shift(end_bit), mask(bitmask(start_bit, end_bit)) {};
 
 template <typename T>
 constexpr T Bits<T>::bitmask(std::uint32_t start_bit, std::uint32_t end_bit)
