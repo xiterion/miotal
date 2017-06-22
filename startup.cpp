@@ -14,7 +14,7 @@ extern void DebugMon_Handler( void );
 extern void PendSV_Handler( void );
 extern void SysTick_Handler( void );
 
-__attribute__((naked, noreturn)) void start()
+[[noreturn]] void start()
 {
   main();
   exit(0);
@@ -46,15 +46,15 @@ __attribute__((section(".Interrupt_vector"), used)) const intvec_elem __vector_t
 
 };
 
-__attribute__((weak, naked, noreturn)) void NMI_Handler( void ) { while (1) {} }
-__attribute__((weak, naked, noreturn)) void HardFault_Handler( void ) { while (1) {} }
-__attribute__((weak, naked, noreturn)) void MemManage_Handler( void ) { while (1) {} }
-__attribute__((weak, naked, noreturn)) void BusFault_Handler( void ) { while (1) {} }
-__attribute__((weak, naked, noreturn)) void UsageFault_Handler( void ) { while (1) {} }
-__attribute__((weak, naked, noreturn)) void SVC_Handler( void ) { while (1) {} }
-__attribute__((weak, naked, noreturn)) void DebugMon_Handler( void ) { while (1) {} }
-__attribute__((weak, naked, noreturn)) void PendSV_Handler( void ) { while (1) {} }
-__attribute__((weak, naked, noreturn)) void SysTick_Handler( void ) { while (1) {} }
-__attribute__((weak, noreturn)) void exit( int code ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void NMI_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void HardFault_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void MemManage_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void BusFault_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void UsageFault_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void SVC_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void DebugMon_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void PendSV_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void SysTick_Handler( void ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void exit( int code ) { while (1) {} }
 
 }

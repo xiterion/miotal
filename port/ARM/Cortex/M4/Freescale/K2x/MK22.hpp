@@ -23,40 +23,7 @@ struct PORTx_PCRn : public Register
     Bit  SRE;
     Bit  PE;
     Bit  PS;
-
-    inline constexpr std::uint32_t initializer(
-        std::uint32_t irqc,
-        bool lk,
-        std::uint32_t mux,
-        bool dse,
-        bool ode,
-        bool pfe,
-        bool sre,
-        bool pe,
-        bool ps);
 };
-
-constexpr std::uint32_t PORTx_PCRn::initializer(
-        std::uint32_t irqc,
-        bool lk,
-        std::uint32_t mux,
-        bool dse,
-        bool ode,
-        bool pfe,
-        bool sre,
-        bool pe,
-        bool ps)
-{
-    return IRQC.bitmask(irqc) |
-           LK.bitmask(lk) |
-           MUX.bitmask(mux) |
-           DSE.bitmask(dse) |
-           ODE.bitmask(ode) |
-           PFE.bitmask(pfe) |
-           SRE.bitmask(sre) |
-           PE.bitmask(pe) |
-           PS.bitmask(ps);
-}
 
 PORTx_PCRn  PORTA_PCR0(0x40049000);
 PORTx_PCRn  PORTA_PCR1(0x40049004);

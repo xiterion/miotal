@@ -38,7 +38,7 @@ debug: CFLAGS += -g -O1
 debug: $(NAME).elf
 
 .PHONY: release
-release: CFLAGS += -O2
+release: CFLAGS += -O3
 release: $(NAME).elf
 
 .PHONY: list
