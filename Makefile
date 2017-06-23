@@ -7,6 +7,7 @@ V         := @
 
 NAME      := test
 PLATFORM  += -mthumb -mcpu=cortex-m4
+PORT      := port/ARM/Cortex/M4/Freescale/K2x/MK22
 CC        := arm-none-eabi-gcc $(PLATFORM) -c
 CXX       := arm-none-eabi-g++ $(PLATFORM) -c
 CFLAGS    := -I.
@@ -17,7 +18,7 @@ CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
 
 LD        := arm-none-eabi-gcc $(PLATFORM) --specs=nosys.specs -nostdlib
-LDFLAGS   := -flto -T application.ld
+LDFLAGS   := -flto -T $(PORT).ld
 
 SIZE      := arm-none-eabi-size
 
@@ -45,9 +46,14 @@ release: $(NAME).elf
 list: debug
 	arm-none-eabi-objdump -C -S $(NAME).elf
 
-$(NAME).elf: $(OBJECTS)
+.PHONY: nm
+nm: debug
+	arm-none-eabi-gcc-nm -n $(NAME).elf
+
+
+$(NAME).elf: $(OBJECTS) $(PORT).sym
 	@echo LD $@
-	$V $(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	$V $(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS) -Xlinker --just-symbols=$(PORT).sym
 	$V $(SIZE) $@
 
 %.o: %.cpp %.d
@@ -57,6 +63,16 @@ $(NAME).elf: $(OBJECTS)
 %.o: %.c %.d
 	@echo CC $@
 	$V $(CC) $< -o $@ $(CFLAGS)
+
+$(PORT).o: CFLAGS := -I. -fno-use-cxa-atexit -fno-rtti -fno-exceptions -std=c++17
+
+$(PORT).awk: $(PORT).registers
+	@echo Creating register transform file
+	$V cat $< | awk '{ print "/"length($$1)$$1"/ { print $$3\" = "$$3"\" }" }' > $@
+
+$(PORT).sym: $(PORT).o $(PORT).awk
+	@echo Creating register symbol file
+	$V arm-none-eabi-gcc-nm $< | awk -f $(PORT).awk > $@
 
 %.d: %.c
 	@echo CDEPEND $@
@@ -82,7 +98,7 @@ $(NAME).elf: $(OBJECTS)
 
 -include $(DEPENDENCY_FILES)
 
-$(OBJECTS) $(DEPENDENCY_FILES): Makefile
+$(OBJECTS) $(DEPENDENCY_FILES) $(PORT).awk $(PORT).sym: Makefile
 
 .PHONY: clean
 clean:
@@ -90,7 +106,7 @@ clean:
 
 .PHONY: cleandeps
 cleandeps:
-	rm -f $(DEPENDENCY_FILES)
+	rm -f $(DEPENDENCY_FILES) $(PORT).awk $(PORT).sym
 
 .PHONY: cleanall
 cleanall: clean cleandeps
