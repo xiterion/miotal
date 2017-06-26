@@ -9,7 +9,7 @@ using Register = generic::Register<std::uint32_t>;
 class BitBandedBit : private generic::Bit<std::uint32_t>
 {
 public:
-    inline constexpr BitBandedBit(Register* reg, std::uint32_t bit);
+    inline constexpr BitBandedBit(volatile std::uint32_t& reg, std::uint32_t bit);
 
     bool read() const      { return reg.read(); }
     void set()             { reg.write(1); }
@@ -34,9 +34,9 @@ using Bits = generic::Bits<std::uint32_t>;
 
 // BitBandedBit implementation
 
-constexpr BitBandedBit::BitBandedBit(Register* reg, std::uint32_t bit) :
+constexpr BitBandedBit::BitBandedBit(volatile std::uint32_t& reg, std::uint32_t bit) :
     generic::Bit<std::uint32_t>(reg, bit),
-    reg(Register(BitBandAddress(reg->address, bit))) {};
+    reg(BitBandAddress(&reg, bit)) {};
 
 constexpr std::uint32_t
 BitBandedBit::BitWordAddress(std::uint32_t bit_band_base,

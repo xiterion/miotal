@@ -68,7 +68,7 @@ $(PORT).o: CFLAGS := -I. -fno-use-cxa-atexit -fno-rtti -fno-exceptions -std=c++1
 
 $(PORT).awk: $(PORT).registers
 	@echo Creating register transform file
-	$V cat $< | awk '{ print "/"length($$1)$$1"/ { print $$3\" = "$$3"\" }" }' > $@
+	$V awk '{ print "/"length($$1)$$1"/ { print $$3\" = "$$3"\" }" }' $< > $@
 
 $(PORT).sym: $(PORT).o $(PORT).awk
 	@echo Creating register symbol file

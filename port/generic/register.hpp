@@ -9,20 +9,20 @@ template <typename T>
 class Register
 {
 public:
-    constexpr Register(T address) :           address(address) {};
-    constexpr Register(const Register& reg) : address(reg.address) {};
+    constexpr Register(volatile T& reg) : reg(reg) {};
 
-    T read() const             { return *reinterpret_cast<volatile T*>(address); }
-    void write(const T& value) { *reinterpret_cast<volatile T*>(address) = value; }
+    T read() const             { return reg; }
+    void write(const T& value) { reg = value; }
 
-    const T address;
+private:
+    volatile T& reg;
 };
 
 template <typename T>
 class Bit
 {
 public:
-    inline constexpr Bit(Register<T>* reg, std::uint32_t bit);
+    inline constexpr Bit(volatile T& reg, std::uint32_t bit);
 
     bool read() const      { return reg.read() & mask; }
     void set()             { reg.write(reg.read() | mask); }
@@ -38,7 +38,7 @@ template <typename T>
 class Bits
 {
 public:
-    inline constexpr Bits(Register<T>* reg, std::uint32_t start_bit, std::uint32_t end_bit);
+    inline constexpr Bits(volatile T& reg, std::uint32_t start_bit, std::uint32_t end_bit);
 
     std::uint32_t read() const      { return (reg.read() & mask) >> shift; }
     void write(std::uint32_t value) { reg.write((reg.read() & ~mask) | bitmask(value)); }
@@ -55,14 +55,14 @@ private:
 // Bit implementation
 
 template <typename T>
-constexpr Bit<T>::Bit(Register<T>* reg, std::uint32_t bit) :
-    reg(*reg), mask(1 << bit) {};
+constexpr Bit<T>::Bit(volatile T& reg, std::uint32_t bit) :
+    reg(reg), mask(1 << bit) {};
 
 // Bits implementation
 
 template <typename T>
-constexpr Bits<T>::Bits(Register<T>* reg, std::uint32_t start_bit, std::uint32_t end_bit) :
-    reg(*reg), shift(end_bit), mask(bitmask(start_bit, end_bit)) {};
+constexpr Bits<T>::Bits(volatile T& reg, std::uint32_t start_bit, std::uint32_t end_bit) :
+    reg(reg), shift(end_bit), mask(bitmask(start_bit, end_bit)) {};
 
 template <typename T>
 constexpr T Bits<T>::bitmask(std::uint32_t start_bit, std::uint32_t end_bit)
