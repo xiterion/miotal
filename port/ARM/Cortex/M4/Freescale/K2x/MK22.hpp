@@ -9,8 +9,9 @@ namespace internal {
 #define extern
 #endif
 
+extern std::uint32_t __attribute__((section(".registers"))) peripherals[0x40000];
 extern volatile std::uint32_t  PORTA_PCR0;
-extern volatile std::uint32_t  PORTA_PCR1;
+/*extern volatile std::uint32_t  PORTA_PCR1;
 extern volatile std::uint32_t  PORTA_PCR2;
 extern volatile std::uint32_t  PORTA_PCR3;
 extern volatile std::uint32_t  PORTA_PCR4;
@@ -41,7 +42,7 @@ extern volatile std::uint32_t PORTA_PCR28;
 extern volatile std::uint32_t PORTA_PCR29;
 extern volatile std::uint32_t PORTA_PCR30;
 extern volatile std::uint32_t PORTA_PCR31;
-
+*/
 } // namespace internal
 
 } // namespace port

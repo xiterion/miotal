@@ -5,6 +5,7 @@ ENTRY(start)
 MEMORY {
 	ROM (rx)  : ORIGIN = 0x00000000, LENGTH = 1024k
 	RAM (rwx) : ORIGIN = 0x1FFF0000, LENGTH = 128k
+    REG (rw)  : ORIGIN = 0x40000000, LENGTH = 1024k
 }
 
 C_STACK_SIZE = 2000;
@@ -105,14 +106,13 @@ SECTIONS {
 	__end = _end;
 	PROVIDE(end = .);
 
-	.stab 0 (NOLOAD) : {
-		*(.stab)
-	}
+    .registers : {
+        *(.registers)
+        . = ALIGN (4);
+    } >REG
 
-	.stabstr 0 (NOLOAD) : {
-		*.(.stabstr)
-	}
-
+	.stab 0 (NOLOAD) : { *(.stab) }
+	.stabstr 0 (NOLOAD) : { *.(.stabstr) }
 	.debug 0 : { *(.debug) }
 	.line  0 : { *(.line) }
 }

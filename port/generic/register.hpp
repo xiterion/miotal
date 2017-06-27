@@ -9,20 +9,20 @@ template <typename T>
 class Register
 {
 public:
-    constexpr Register(volatile T& reg) : reg(reg) {};
+    constexpr Register(std::uintptr_t address) : address(address) {};
 
-    T read() const             { return reg; }
-    void write(const T& value) { reg = value; }
+    T read() const             { return *reinterpret_cast<volatile T*>(address); }
+    void write(const T& value) { *reinterpret_cast<volatile T*>(address) = value; }
 
 private:
-    volatile T& reg;
+    const std::uintptr_t address;
 };
 
 template <typename T>
 class Bit
 {
 public:
-    inline constexpr Bit(volatile T& reg, std::uint32_t bit);
+    inline constexpr Bit(std::uintptr_t address, std::uint32_t bit);
 
     bool read() const      { return reg.read() & mask; }
     void set()             { reg.write(reg.read() | mask); }
@@ -38,10 +38,10 @@ template <typename T>
 class Bits
 {
 public:
-    inline constexpr Bits(volatile T& reg, std::uint32_t start_bit, std::uint32_t end_bit);
+    inline constexpr Bits(std::uintptr_t address, std::uint32_t start_bit, std::uint32_t end_bit);
 
-    std::uint32_t read() const      { return (reg.read() & mask) >> shift; }
-    void write(std::uint32_t value) { reg.write((reg.read() & ~mask) | bitmask(value)); }
+    T read() const      { return (reg.read() & mask) >> shift; }
+    void write(T value) { reg.write((reg.read() & ~mask) | ((value << shift) & mask)); }
 
 private:
     Register<T> reg;
@@ -51,18 +51,17 @@ private:
     static constexpr T bitmask(std::uint32_t start_bit, std::uint32_t end_bit);
 };
 
-
 // Bit implementation
 
 template <typename T>
-constexpr Bit<T>::Bit(volatile T& reg, std::uint32_t bit) :
-    reg(reg), mask(1 << bit) {};
+constexpr Bit<T>::Bit(std::uintptr_t address, std::uint32_t bit) :
+    reg(address), mask(1 << bit) {};
 
 // Bits implementation
 
 template <typename T>
-constexpr Bits<T>::Bits(volatile T& reg, std::uint32_t start_bit, std::uint32_t end_bit) :
-    reg(reg), shift(end_bit), mask(bitmask(start_bit, end_bit)) {};
+constexpr Bits<T>::Bits(std::uintptr_t address, std::uint32_t start_bit, std::uint32_t end_bit) :
+    reg(address), shift(end_bit), mask(bitmask(start_bit, end_bit)) {};
 
 template <typename T>
 constexpr T Bits<T>::bitmask(std::uint32_t start_bit, std::uint32_t end_bit)

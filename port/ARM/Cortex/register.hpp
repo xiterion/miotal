@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <cstddef>
+
 #include <port/generic/register.hpp>
 
 namespace port {
@@ -9,7 +12,7 @@ using Register = generic::Register<std::uint32_t>;
 class BitBandedBit : private generic::Bit<std::uint32_t>
 {
 public:
-    inline constexpr BitBandedBit(volatile std::uint32_t& reg, std::uint32_t bit);
+    inline constexpr BitBandedBit(std::uintptr_t address, std::uint32_t bit);
 
     bool read() const      { return reg.read(); }
     void set()             { reg.write(1); }
@@ -19,10 +22,10 @@ public:
 private:
     Register reg;
 
-    inline constexpr std::uint32_t BitWordAddress(std::uint32_t bit_band_base,
-                                                  std::uint32_t byte_offset,
+    inline constexpr std::uint32_t BitWordAddress(std::uintptr_t bit_band_base,
+                                                  std::ptrdiff_t byte_offset,
                                                   std::uint32_t bit_number);
-    inline constexpr std::uint32_t BitBandAddress(std::uint32_t address,
+    inline constexpr std::uint32_t BitBandAddress(std::uintptr_t address,
                                                   std::uint32_t bit_number);
 };
 
@@ -34,20 +37,20 @@ using Bits = generic::Bits<std::uint32_t>;
 
 // BitBandedBit implementation
 
-constexpr BitBandedBit::BitBandedBit(volatile std::uint32_t& reg, std::uint32_t bit) :
-    generic::Bit<std::uint32_t>(reg, bit),
-    reg(BitBandAddress(&reg, bit)) {};
+constexpr BitBandedBit::BitBandedBit(std::uintptr_t address, std::uint32_t bit) :
+    generic::Bit<std::uint32_t>(address, bit),
+    reg(BitBandAddress(address, bit)) {};
 
 constexpr std::uint32_t
-BitBandedBit::BitWordAddress(std::uint32_t bit_band_base,
-                             std::uint32_t byte_offset,
+BitBandedBit::BitWordAddress(std::uintptr_t bit_band_base,
+                             std::ptrdiff_t byte_offset,
                              std::uint32_t bit_number)
 {
     return bit_band_base + ((byte_offset * 32) + (bit_number * 4));
 }
 
 constexpr std::uint32_t
-BitBandedBit::BitBandAddress(std::uint32_t address, std::uint32_t bit_number)
+BitBandedBit::BitBandAddress(std::uintptr_t address, std::uint32_t bit_number)
 {
     if((0x20000000 <= address) and (address <= 0x200FFFFF))
     {
@@ -59,5 +62,4 @@ BitBandedBit::BitBandAddress(std::uint32_t address, std::uint32_t bit_number)
     }
     return 0;
 }
-
 } // namespace port

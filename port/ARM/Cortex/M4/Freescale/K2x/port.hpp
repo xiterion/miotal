@@ -9,11 +9,11 @@ namespace port {
 
 struct PORTx_PCRn : public Register
 {
-    constexpr PORTx_PCRn(volatile std::uint32_t& address) : Register(address),
-        //ISF(this, 24),
-        //IRQC(this, 23, 20),
+    constexpr PORTx_PCRn(std::uintptr_t address) : Register(address),
+        ISF(address, 24),
+        IRQC(address, 23, 20),
         LK(address, 15),
-        //MUX(this, 11, 8),
+        MUX(address, 11, 8),
         DSE(address, 6),
         ODE(address, 5),
         PFE(address, 4),
@@ -21,10 +21,10 @@ struct PORTx_PCRn : public Register
         PE(address, 1),
         PS(address, 0) {};
 
-    //W1C  ISF;
-    //Bits IRQC;
+    W1C  ISF;
+    Bits IRQC;
     Bit  LK;
-    //Bits MUX;
+    Bits MUX;
     Bit  DSE;
     Bit  ODE;
     Bit  PFE;

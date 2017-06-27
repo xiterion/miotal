@@ -66,6 +66,8 @@ $(NAME).elf: $(OBJECTS) $(PORT).sym
 
 $(PORT).o: CFLAGS := -I. -fno-use-cxa-atexit -fno-rtti -fno-exceptions -std=c++17
 
+$(PORT).o: $(PORT).hpp $(PORT).cpp
+
 $(PORT).awk: $(PORT).registers
 	@echo Creating register transform file
 	$V awk '{ print "/"length($$1)$$1"/ { print $$3\" = "$$3"\" }" }' $< > $@
