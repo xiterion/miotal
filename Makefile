@@ -51,9 +51,9 @@ nm: debug
 	arm-none-eabi-gcc-nm -n $(NAME).elf
 
 
-$(NAME).elf: $(OBJECTS) $(PORT).sym
+$(NAME).elf: $(OBJECTS)
 	@echo LD $@
-	$V $(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS) -Xlinker --just-symbols=$(PORT).sym
+	$V $(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 	$V $(SIZE) $@
 
 %.o: %.cpp %.d
@@ -63,18 +63,6 @@ $(NAME).elf: $(OBJECTS) $(PORT).sym
 %.o: %.c %.d
 	@echo CC $@
 	$V $(CC) $< -o $@ $(CFLAGS)
-
-$(PORT).o: CFLAGS := -I. -fno-use-cxa-atexit -fno-rtti -fno-exceptions -std=c++17
-
-$(PORT).o: $(PORT).hpp $(PORT).cpp
-
-$(PORT).awk: $(PORT).registers
-	@echo Creating register transform file
-	$V awk '{ print "/"length($$1)$$1"/ { print $$3\" = "$$3"\" }" }' $< > $@
-
-$(PORT).sym: $(PORT).o $(PORT).awk
-	@echo Creating register symbol file
-	$V arm-none-eabi-gcc-nm $< | awk -f $(PORT).awk > $@
 
 %.d: %.c
 	@echo CDEPEND $@
@@ -100,7 +88,7 @@ $(PORT).sym: $(PORT).o $(PORT).awk
 
 -include $(DEPENDENCY_FILES)
 
-$(OBJECTS) $(DEPENDENCY_FILES) $(PORT).awk $(PORT).sym: Makefile
+$(OBJECTS) $(DEPENDENCY_FILES): Makefile
 
 .PHONY: clean
 clean:
@@ -108,7 +96,7 @@ clean:
 
 .PHONY: cleandeps
 cleandeps:
-	rm -f $(DEPENDENCY_FILES) $(PORT).awk $(PORT).sym
+	rm -f $(DEPENDENCY_FILES)
 
 .PHONY: cleanall
 cleanall: clean cleandeps
