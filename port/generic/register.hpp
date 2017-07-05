@@ -55,13 +55,13 @@ private:
 
 template <typename T>
 constexpr Bit<T>::Bit(std::uintptr_t address, std::uint32_t bit) :
-    reg(address), mask(1 << bit) {};
+    reg(address), mask(1 << bit) {}
 
 // Bits implementation
 
 template <typename T>
 constexpr Bits<T>::Bits(std::uintptr_t address, std::uint32_t start_bit, std::uint32_t end_bit) :
-    reg(address), shift(end_bit), mask(bitmask(start_bit, end_bit)) {};
+    reg(address), mask(bitmask(start_bit, end_bit)), shift(end_bit) {}
 
 template <typename T>
 constexpr T Bits<T>::bitmask(std::uint32_t start_bit, std::uint32_t end_bit)

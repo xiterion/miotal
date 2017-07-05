@@ -16,6 +16,7 @@ extern void SysTick_Handler( void );
 
 [[noreturn]] void start()
 {
+#pragma GCC diagnostic ignored "-Wpedantic"
   main();
   exit(0);
 }
@@ -24,9 +25,9 @@ typedef void( *intfunc )( void );
 typedef union { intfunc __fun; void * __ptr; } intvec_elem;
 extern uintptr_t __c_stack_top__;
 
-__attribute__((section(".Interrupt_vector"), used)) const intvec_elem __vector_table[] =
+__attribute__((section(".Interrupt_vector"), used)) const intfunc __vector_table[] =
 {
-  { .__ptr = &__c_stack_top__ },
+  reinterpret_cast<intfunc>(&__c_stack_top__),
   start,
 
   NMI_Handler,
@@ -55,6 +56,6 @@ __attribute__((weak)) [[noreturn]] void SVC_Handler( void ) { while (1) {} }
 __attribute__((weak)) [[noreturn]] void DebugMon_Handler( void ) { while (1) {} }
 __attribute__((weak)) [[noreturn]] void PendSV_Handler( void ) { while (1) {} }
 __attribute__((weak)) [[noreturn]] void SysTick_Handler( void ) { while (1) {} }
-__attribute__((weak)) [[noreturn]] void exit( int code ) { while (1) {} }
+__attribute__((weak)) [[noreturn]] void exit( int ) { while (1) {} }
 
 }

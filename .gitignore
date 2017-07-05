@@ -34,3 +34,7 @@
 
 # Vim swap files
 *.swp
+
+# Eclipse build directories
+/Debug/
+/Release/

@@ -39,7 +39,7 @@ using Bits = generic::Bits<std::uint32_t>;
 
 constexpr BitBandedBit::BitBandedBit(std::uintptr_t address, std::uint32_t bit) :
     generic::Bit<std::uint32_t>(address, bit),
-    reg(BitBandAddress(address, bit)) {};
+    reg(BitBandAddress(address, bit)) {}
 
 constexpr std::uint32_t
 BitBandedBit::BitWordAddress(std::uintptr_t bit_band_base,
