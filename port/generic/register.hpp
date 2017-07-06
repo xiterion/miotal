@@ -24,10 +24,11 @@ class Bit
 public:
     inline constexpr Bit(std::uintptr_t address, std::uint32_t bit);
 
-    bool read() const      { return reg.read() & mask; }
-    void set()             { reg.write(reg.read() | mask); }
-    void clear()           { reg.write(reg.read() & ~mask); }
-    void write(bool value) { value ? set() : clear(); }
+    bool read() const           { return reg.read() & mask; }
+    void write(bool value)      { value ? set() : clear(); }
+    void set()                  { reg.write(reg.read() | mask); }
+    void clear()                { reg.write(reg.read() & ~mask); }
+    T to_word(bool value) const { return value ? mask : 0; }
 
 private:
     Register<T> reg;
@@ -40,8 +41,9 @@ class Bits
 public:
     inline constexpr Bits(std::uintptr_t address, std::uint32_t start_bit, std::uint32_t end_bit);
 
-    T read() const      { return (reg.read() & mask) >> shift; }
-    void write(T value) { reg.write((reg.read() & ~mask) | ((value << shift) & mask)); }
+    T read() const           { return (reg.read() & mask) >> shift; }
+    void write(T value)      { reg.write((reg.read() & ~mask) | to_word(value)); }
+    T to_word(T value) const { return (value << shift) & mask; }
 
 private:
     Register<T> reg;

@@ -18,6 +18,7 @@ public:
     void set()             { reg.write(1); }
     void clear()           { reg.write(0); }
     void write(bool value) { reg.write(value ? 1 : 0); }
+    using generic::Bit<std::uint32_t>::to_word;
 
 private:
     Register reg;

@@ -5,5 +5,5 @@ port::PORTx_PCRn PORTA_PCR0(0x40049000);
 
 int main(void)
 {
-    PORTA_PCR0.ISF.clear();
+    PORTA_PCR0.initialize(0, false, 4, true, true, true, false, false, false);
 }

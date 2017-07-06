@@ -12,6 +12,7 @@ struct W1C : private port::Bit
 
     using port::Bit::read;
     void clear() { port::Bit::set(); }
+    using port::Bit::to_word;
 };
 
 } // namespace port
