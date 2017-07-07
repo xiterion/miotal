@@ -7,14 +7,13 @@ PORTx_PCRn PORTA_PCR0(0x40049000);
 
 int main(void)
 {
-    PORTA_PCR0.initialize(
-            Interrupt_Configuration::interrupt_when_logic_0,
-            Lock_Register::enabled,
-            Pin_Mux_Control::disabled_analog,
-            Drive_Strength_Enable::low,
-            Open_Drain_Enable::disabled,
-            Passive_Filter_Enable::disabled,
-            Slew_Rate_Enable::fast,
-            Pull_Enable::disabled,
-            Pull_Select::down);
+    PORTA_PCR0.initialize(Interrupt_Configuration::interrupt_when_logic_0,
+                                    Lock_Register::disabled,
+                                  Pin_Mux_Control::disabled_analog,
+                                   Drive_Strength::low,
+                                       Open_Drain::disabled,
+                                   Passive_Filter::disabled,
+                                        Slew_Rate::fast,
+                                    Internal_Pull::disabled,
+                                      Pull_Select::down);
 }

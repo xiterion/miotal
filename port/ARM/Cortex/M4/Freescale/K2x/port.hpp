@@ -44,31 +44,31 @@ enum class Pin_Mux_Control : std::uint32_t
     alternative_7      = 0b111
 };
 
-enum class Drive_Strength_Enable : bool
+enum class Drive_Strength : bool
 {
     low  = false,
     high = true
 };
 
-enum class Open_Drain_Enable : bool
+enum class Open_Drain : bool
 {
     disabled = false,
     enabled  = true
 };
 
-enum class Passive_Filter_Enable : bool
+enum class Passive_Filter : bool
 {
     disabled = false,
     enabled  = true
 };
 
-enum class Slew_Rate_Enable : bool
+enum class Slew_Rate : bool
 {
     fast = false,
     slow = true
 };
 
-enum class Pull_Enable : bool
+enum class Internal_Pull : bool
 {
     disabled = false,
     enabled  = true
@@ -83,36 +83,28 @@ enum class Pull_Select : bool
 struct PORTx_PCRn : public Register
 {
     constexpr PORTx_PCRn(std::uintptr_t address) : Register(address),
-        ISF(address, 24),
-        IRQC(address, 23, 20),
-        LK(address, 15),
-        MUX(address, 11, 8),
-        DSE(address, 6),
-        ODE(address, 5),
-        PFE(address, 4),
-        SRE(address, 2),
-        PE(address, 1),
-        PS(address, 0) {};
+        ISF(address), IRQC(address), LK(address), MUX(address), DSE(address),
+		ODE(address), PFE(address), SRE(address), PE(address), PS(address) {};
 
-    W1C<Interrupt_Status>  ISF;
-    Bits<Interrupt_Configuration> IRQC;
-    Bit<Lock_Register>  LK;
-    Bits<Pin_Mux_Control> MUX;
-    Bit<Drive_Strength_Enable>  DSE;
-    Bit<Open_Drain_Enable>  ODE;
-    Bit<Passive_Filter_Enable>  PFE;
-    Bit<Slew_Rate_Enable>  SRE;
-    Bit<Pull_Enable>  PE;
-    Bit<Pull_Select>  PS;
+    W1C<Interrupt_Status, 24>  ISF;
+    Bits<Interrupt_Configuration, 23, 20> IRQC;
+    Bit<Lock_Register, 15>  LK;
+    Bits<Pin_Mux_Control, 11, 8> MUX;
+    Bit<Drive_Strength, 6>  DSE;
+    Bit<Open_Drain, 5>  ODE;
+    Bit<Passive_Filter, 4>  PFE;
+    Bit<Slew_Rate, 2>  SRE;
+    Bit<Internal_Pull, 1>  PE;
+    Bit<Pull_Select, 0>  PS;
 
     void initialize(Interrupt_Configuration irqc,
                     Lock_Register           lk,
                     Pin_Mux_Control         mux,
-                    Drive_Strength_Enable   dse,
-                    Open_Drain_Enable       ode,
-                    Passive_Filter_Enable   pfe,
-                    Slew_Rate_Enable        sre,
-                    Pull_Enable             pe,
+                    Drive_Strength          dse,
+                    Open_Drain              ode,
+                    Passive_Filter          pfe,
+                    Slew_Rate               sre,
+                    Internal_Pull           pe,
                     Pull_Select             ps)
     {
         this->write(IRQC.to_word(irqc) |
