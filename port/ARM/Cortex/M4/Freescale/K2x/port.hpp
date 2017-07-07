@@ -7,6 +7,79 @@ using BitBandEnabled = std::true_type;
 
 namespace port {
 
+enum class Interrupt_Status : bool
+{
+    not_detected = false,
+    detected = true
+};
+
+enum class Interrupt_Configuration : std::uint32_t
+{
+    disabled                    = 0b0000,
+    DMA_request_on_rising_edge  = 0b0001,
+    DMA_request_on_falling_edge = 0b0010,
+    DMA_request_on_either_edge  = 0b0011,
+    interrupt_when_logic_0      = 0b1000,
+    interrupt_on_rising_edge    = 0b1001,
+    interrupt_on_falling_edge   = 0b1010,
+    interrupt_on_either_edge    = 0b1011,
+    interrupt_when_logic_1      = 0b1100
+};
+
+enum class Lock_Register : bool
+{
+    disabled = false,
+    enabled  = true,
+};
+
+enum class Pin_Mux_Control : std::uint32_t
+{
+    disabled_analog    = 0b000,
+    alternative_1_GPIO = 0b001,
+    alternative_2      = 0b010,
+    alternative_3      = 0b011,
+    alternative_4      = 0b100,
+    alternative_5      = 0b101,
+    alternative_6      = 0b110,
+    alternative_7      = 0b111
+};
+
+enum class Drive_Strength_Enable : bool
+{
+    low  = false,
+    high = true
+};
+
+enum class Open_Drain_Enable : bool
+{
+    disabled = false,
+    enabled  = true
+};
+
+enum class Passive_Filter_Enable : bool
+{
+    disabled = false,
+    enabled  = true
+};
+
+enum class Slew_Rate_Enable : bool
+{
+    fast = false,
+    slow = true
+};
+
+enum class Pull_Enable : bool
+{
+    disabled = false,
+    enabled  = true
+};
+
+enum class Pull_Select : bool
+{
+    down = false,
+    up   = true
+};
+
 struct PORTx_PCRn : public Register
 {
     constexpr PORTx_PCRn(std::uintptr_t address) : Register(address),
@@ -21,38 +94,37 @@ struct PORTx_PCRn : public Register
         PE(address, 1),
         PS(address, 0) {};
 
-    W1C  ISF;
-    Bits IRQC;
-    Bit  LK;
-    Bits MUX;
-    Bit  DSE;
-    Bit  ODE;
-    Bit  PFE;
-    Bit  SRE;
-    Bit  PE;
-    Bit  PS;
+    W1C<Interrupt_Status>  ISF;
+    Bits<Interrupt_Configuration> IRQC;
+    Bit<Lock_Register>  LK;
+    Bits<Pin_Mux_Control> MUX;
+    Bit<Drive_Strength_Enable>  DSE;
+    Bit<Open_Drain_Enable>  ODE;
+    Bit<Passive_Filter_Enable>  PFE;
+    Bit<Slew_Rate_Enable>  SRE;
+    Bit<Pull_Enable>  PE;
+    Bit<Pull_Select>  PS;
 
-    void initialize(std::uint32_t interrupt_configuration,
-                             bool lock_register,
-                    std::uint32_t pin_mux_control,
-                             bool drive_strength_enable,
-                             bool open_drain_enable,
-                             bool passive_filter_enable,
-                             bool slew_rate_enable,
-                             bool pull_enable,
-                             bool pull_select)
+    void initialize(Interrupt_Configuration irqc,
+                    Lock_Register           lk,
+                    Pin_Mux_Control         mux,
+                    Drive_Strength_Enable   dse,
+                    Open_Drain_Enable       ode,
+                    Passive_Filter_Enable   pfe,
+                    Slew_Rate_Enable        sre,
+                    Pull_Enable             pe,
+                    Pull_Select             ps)
     {
-        this->write(IRQC.to_word(interrupt_configuration) |
-                      LK.to_word(lock_register) |
-                     MUX.to_word(pin_mux_control) |
-                     DSE.to_word(drive_strength_enable) |
-                     ODE.to_word(open_drain_enable) |
-                     PFE.to_word(passive_filter_enable) |
-                     SRE.to_word(slew_rate_enable) |
-                      PE.to_word(pull_enable) |
-                      PS.to_word(pull_select));
+        this->write(IRQC.to_word(irqc) |
+                      LK.to_word(lk)   |
+                     MUX.to_word(mux)  |
+                     DSE.to_word(dse)  |
+                     ODE.to_word(ode)  |
+                     PFE.to_word(pfe)  |
+                     SRE.to_word(sre)  |
+                      PE.to_word(pe)   |
+                      PS.to_word(ps));
     }
 };
-
 
 } // namespace port

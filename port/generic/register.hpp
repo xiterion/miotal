@@ -18,24 +18,24 @@ private:
     const std::uintptr_t address;
 };
 
-template <typename T>
+template <typename T, typename V>
 class Bit
 {
 public:
     inline constexpr Bit(std::uintptr_t address, std::uint32_t bit);
 
-    bool read() const           { return reg.read() & mask; }
-    void write(bool value)      { value ? set() : clear(); }
-    void set()                  { reg.write(reg.read() | mask); }
-    void clear()                { reg.write(reg.read() & ~mask); }
-    T to_word(bool value) const { return value ? mask : 0; }
+    bool read() const        { return reg.read() & mask; }
+    void write(V value)      { static_cast<bool>(value) ? set() : clear(); }
+    void set()               { reg.write(reg.read() | mask); }
+    void clear()             { reg.write(reg.read() & ~mask); }
+    V to_word(T value) const { return static_cast<bool>(value) ? mask : 0; }
 
 private:
-    Register<T> reg;
-    const T mask;
+    Register<V> reg;
+    const V mask;
 };
 
-template <typename T>
+template <typename T, typename V>
 class Bits
 {
 public:
@@ -43,30 +43,30 @@ public:
 
     T read() const           { return (reg.read() & mask) >> shift; }
     void write(T value)      { reg.write((reg.read() & ~mask) | to_word(value)); }
-    T to_word(T value) const { return (value << shift) & mask; }
+    V to_word(T value) const { return (static_cast<V>(value) << shift) & mask; }
 
 private:
-    Register<T> reg;
-    const T mask;
+    Register<V> reg;
+    const V mask;
     const std::uint32_t shift;
 
-    static constexpr T bitmask(std::uint32_t start_bit, std::uint32_t end_bit);
+    static constexpr V bitmask(std::uint32_t start_bit, std::uint32_t end_bit);
 };
 
 // Bit implementation
 
-template <typename T>
-constexpr Bit<T>::Bit(std::uintptr_t address, std::uint32_t bit) :
+template <typename T, typename V>
+constexpr Bit<T, V>::Bit(std::uintptr_t address, std::uint32_t bit) :
     reg(address), mask(1 << bit) {}
 
 // Bits implementation
 
-template <typename T>
-constexpr Bits<T>::Bits(std::uintptr_t address, std::uint32_t start_bit, std::uint32_t end_bit) :
+template <typename T, typename V>
+constexpr Bits<T, V>::Bits(std::uintptr_t address, std::uint32_t start_bit, std::uint32_t end_bit) :
     reg(address), mask(bitmask(start_bit, end_bit)), shift(end_bit) {}
 
-template <typename T>
-constexpr T Bits<T>::bitmask(std::uint32_t start_bit, std::uint32_t end_bit)
+template <typename T, typename V>
+constexpr V Bits<T, V>::bitmask(std::uint32_t start_bit, std::uint32_t end_bit)
 {
     return ((1 << (1 + start_bit - end_bit)) - 1) << end_bit;
 }
