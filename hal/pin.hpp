@@ -4,25 +4,18 @@
 
 namespace hal {
 
-template <typename impl, typename... interfaces>
-class Pin : public impl
-{
+class InterruptCapable {
 public:
-    Pin(impl& hw) {};
-private:
-    static util::InheritsFrom<impl, interfaces...> check;
+    virtual void enableInterrupt() = 0;
+    virtual void disableInterrupt() = 0;
+    virtual bool interruptEnabled() = 0;
 };
 
-class InterruptCapable
-{
+class OpenDrainCapable {
 public:
-    virtual bool interruptActive() const = 0;
-};
-
-class OpenDrainCapable
-{
-public:
-    virtual bool openDrainEnabled() const = 0;
+    virtual void enableOpenDrain() = 0;
+    virtual void disableOpenDrain() = 0;
+    virtual bool openDrainEnabled() = 0;
 };
 
 } // namespace hal

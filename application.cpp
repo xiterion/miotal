@@ -1,19 +1,23 @@
 #include "hal/pin.hpp"
-#include "port/ARM/Cortex/M4/Freescale/K2x/MK22.hpp"
+#include "port/ARM/Cortex/M4/Freescale/K2x/port.hpp"
 
-using namespace port;
+using namespace hal;
 
-PORTx_PCRn PORTA_PCR0(0x40049000);
+class GPIO : public InterruptCapable, public OpenDrainCapable {
+public:
+    void enableInterrupt() final {;}
+    void disableInterrupt() final {;}
+    bool interruptEnabled() final { return false; }
+
+    void enableOpenDrain() final {;}
+    void disableOpenDrain() final {;}
+    bool openDrainEnabled() final { return false; }
+};
 
 int main(void)
 {
-    PORTA_PCR0.initialize(Interrupt_Configuration::interrupt_when_logic_0,
-                                    Lock_Register::disabled,
-                                  Pin_Mux_Control::disabled_analog,
-                                   Drive_Strength::low,
-                                       Open_Drain::disabled,
-                                   Passive_Filter::disabled,
-                                        Slew_Rate::fast,
-                                    Internal_Pull::disabled,
-                                      Pull_Select::down);
+    GPIO foo;
+    InterruptCapable& bar = foo;
+    bar.enableInterrupt();
+    port::PORTA_PCR0.ISF.clear();
 }

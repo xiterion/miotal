@@ -120,3 +120,5 @@ struct PORTx_PCRn : public Register
 };
 
 } // namespace port
+
+#include "registers.hpp"
