@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <cstddef>
 
-#include <port/generic/register.hpp>
+#include <platform/generic/register.hpp>
 
-namespace port {
+namespace platform {
 
 using Register = generic::Register<std::uint32_t>;
 
@@ -66,4 +66,4 @@ BitBandedBit<T, bit>::BitBandAddress(std::uintptr_t address)
     }
     return 0;
 }
-} // namespace port
+} // namespace platform

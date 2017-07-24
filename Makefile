@@ -6,10 +6,10 @@ default: debug
 V         := @
 
 NAME      := test
-PLATFORM  += -mthumb -mcpu=cortex-m4
-PORT      := port/ARM/Cortex/M4/Freescale/K2x
-CC        := arm-none-eabi-gcc $(PLATFORM) -c
-CXX       := arm-none-eabi-g++ $(PLATFORM) -c
+CPU       += -mthumb -mcpu=cortex-m4
+PLATFORM  := platform/ARM/Cortex/M4/Freescale/K2x
+CC        := arm-none-eabi-gcc $(CPU) -c
+CXX       := arm-none-eabi-g++ $(CPU) -c
 CFLAGS    := -I.
 CFLAGS    += -flto -fno-use-cxa-atexit
 CXXFLAGS  := -fno-rtti -fno-exceptions -std=c++17
@@ -17,8 +17,8 @@ CXXFLAGS  := -fno-rtti -fno-exceptions -std=c++17
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc $(PLATFORM) --specs=nosys.specs -nostdlib
-LDFLAGS   := -flto -T $(PORT)/port.ld
+LD        := arm-none-eabi-gcc $(CPU) --specs=nosys.specs -nostdlib
+LDFLAGS   := -flto -T $(PLATFORM)/platform.ld
 
 SIZE      := arm-none-eabi-size
 

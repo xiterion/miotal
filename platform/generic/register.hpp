@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace port {
+namespace platform {
 namespace generic {
 
 template <typename T>
@@ -72,4 +72,4 @@ constexpr V Bits<T, V, start_bit, end_bit>::bitmask()
 }
 
 } // namespace generic
-} // namespace port
+} // namespace platform

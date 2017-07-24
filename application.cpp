@@ -1,5 +1,5 @@
 #include "hal/pin.hpp"
-#include "port/ARM/Cortex/M4/Freescale/K2x/port.hpp"
+#include "platform/ARM/Cortex/M4/Freescale/K2x/platform.hpp"
 
 using namespace hal;
 
@@ -19,5 +19,5 @@ int main(void)
     GPIO foo;
     InterruptCapable& bar = foo;
     bar.enableInterrupt();
-    port::PORTA_PCR0.ISF.clear();
+    platform::PORTA_PCR0.ISF.clear();
 }

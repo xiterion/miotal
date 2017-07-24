@@ -3,9 +3,9 @@
 #include <type_traits>
 
 using BitBandEnabled = std::true_type;
-#include <port/ARM/Cortex/M4/Freescale/register.hpp>
+#include <platform/ARM/Cortex/M4/Freescale/register.hpp>
 
-namespace port {
+namespace platform {
 
 enum class Interrupt_Status : bool
 {
@@ -119,6 +119,6 @@ struct PORTx_PCRn : public Register
     }
 };
 
-} // namespace port
+} // namespace platform
 
 #include "registers.hpp"
