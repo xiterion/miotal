@@ -1,12 +1,14 @@
 #pragma once
 #include <type_traits>
+#include <numeric>
 #include "platform.hpp"
+#include <util/bit_manipulation.hpp>
 
 using BitBandEnabled = std::true_type;
 #include <platform/ARM/Cortex/M4/Freescale/register.hpp>
 
 #if defined(DEFINE_SYMBOLS)
-#define SYMBOL(type, name, ...) type name(__VA_ARGS__)
+#define SYMBOL(type, name, ...) type name{__VA_ARGS__}
 #else // !defined(DEFINE_SYMBOLS)
 #define SYMBOL(type, name, ...) extern type name
 #endif
@@ -86,13 +88,13 @@ enum class Pull_Select : bool
     up   = true
 };
 
+
 class PORTx_PCRn : public Register
 {
 public:
-    constexpr PORTx_PCRn(std::uintptr_t address) : Register(address),
-        ISF(address), IRQC(address), LK(address), MUX(address), DSE(address),
-		ODE(address), PFE(address), SRE(address), PE(address), PS(address) {}
-    using Register::operator=;
+    constexpr PORTx_PCRn(std::uintptr_t address) : Register{address},
+        ISF{address}, IRQC{address}, LK{address}, MUX{address}, DSE{address},
+		ODE{address}, PFE{address}, SRE{address}, PE{address}, PS{address} {}
 
     W1C<Interrupt_Status, 24>  ISF;
     Bits<Interrupt_Configuration, 23, 20> IRQC;
@@ -105,15 +107,16 @@ public:
     Bit<Internal_Pull, 1>  PE;
     Bit<Pull_Select, 0>  PS;
 
-    void initialize(Interrupt_Configuration irqc,
-                    Lock_Register           lk,
-                    Pin_Mux_Control         mux,
-                    Drive_Strength          dse,
-                    Open_Drain              ode,
-                    Passive_Filter          pfe,
-                    Slew_Rate               sre,
-                    Internal_Pull           pe,
-                    Pull_Select             ps)
+    using Register::write;
+    void write(Interrupt_Configuration irqc,
+               Lock_Register           lk,
+               Pin_Mux_Control         mux,
+               Drive_Strength          dse,
+               Open_Drain              ode,
+               Passive_Filter          pfe,
+               Slew_Rate               sre,
+               Internal_Pull           pe,
+               Pull_Select             ps)
     {
         this->write(IRQC.to_word(irqc) |
                       LK.to_word(lk)   |
@@ -127,40 +130,79 @@ public:
     }
 };
 
-class PORTx_GPCLR : public Register
+class GPCxR : public Register
 {
 public:
-    constexpr PORTx_GPCLR(std::uintptr_t address) : Register(address) {}
+    constexpr GPCxR(std::uintptr_t address) : Register{address},
+        LK{address}, MUX{address}, DSE{address}, ODE{address},
+        PFE{address}, SRE{address}, PE{address}, PS{address} {}
+
+    using Register::write;
+    void write(util::Bitmask   bits,
+               Lock_Register   lk,
+               Pin_Mux_Control mux,
+               Drive_Strength  dse,
+               Open_Drain      ode,
+               Passive_Filter  pfe,
+               Slew_Rate       sre,
+               Internal_Pull   pe,
+               Pull_Select     ps)
+    {
+        this->write( LK.to_word(lk)  |
+                    MUX.to_word(mux) |
+                    DSE.to_word(dse) |
+                    ODE.to_word(ode) |
+                    PFE.to_word(pfe) |
+                    SRE.to_word(sre) |
+                     PE.to_word(pe)  |
+                     PS.to_word(ps)  |
+                     bits.mask);
+    }
+private:
+    Bit<Lock_Register, 15>  LK;
+    Bits<Pin_Mux_Control, 11, 8> MUX;
+    Bit<Drive_Strength, 6>  DSE;
+    Bit<Open_Drain, 5>  ODE;
+    Bit<Passive_Filter, 4>  PFE;
+    Bit<Slew_Rate, 2>  SRE;
+    Bit<Internal_Pull, 1>  PE;
+    Bit<Pull_Select, 0>  PS;
 };
 
-class PORTx_GPCHR : public Register
+class PORTx_GPCLR : public GPCxR
 {
 public:
-    constexpr PORTx_GPCHR(std::uintptr_t address) : Register(address) {}
+    using GPCxR::GPCxR;
+};
+
+class PORTx_GPCHR : public GPCxR
+{
+public:
+    using GPCxR::GPCxR;
 };
 
 class PORTx_ISFR : public Register
 {
 public:
-    constexpr PORTx_ISFR(std::uintptr_t address) : Register(address) {}
+    constexpr PORTx_ISFR(std::uintptr_t address) : Register{address} {}
 };
 
 class PORTx_DFER : public Register
 {
 public:
-    constexpr PORTx_DFER(std::uintptr_t address) : Register(address) {}
+    constexpr PORTx_DFER(std::uintptr_t address) : Register{address} {}
 };
 
 class PORTx_DFCR : public Register
 {
 public:
-    constexpr PORTx_DFCR(std::uintptr_t address) : Register(address) {}
+    constexpr PORTx_DFCR(std::uintptr_t address) : Register{address} {}
 };
 
 class PORTx_DFWR : public Register
 {
 public:
-    constexpr PORTx_DFWR(std::uintptr_t address) : Register(address) {}
+    constexpr PORTx_DFWR(std::uintptr_t address) : Register{address} {}
 };
 
 SYMBOL(PORTx_PCRn,  PORTA_PCR0,  0x4004'9000);

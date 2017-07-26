@@ -1,33 +1,19 @@
-#include <utility>
 #include "hal/pin.hpp"
 #include "platform/ARM/Cortex/M4/Freescale/K2x/platform.hpp"
 
-using namespace hal;
+#include <initializer_list>
 
-class GPIO : public InterruptCapable, public OpenDrainCapable {
-public:
-    void enableInterrupt() final {;}
-    void disableInterrupt() final {;}
-    bool interruptEnabled() final { return false; }
-
-    void enableOpenDrain() final {;}
-    void disableOpenDrain() final {;}
-    bool openDrainEnabled() final { return false; }
-};
-
-template <typename... Args>
-void foo(Args... args) { ; }
+using namespace platform;
 
 int main(void)
 {
-    platform::PORTA_PCR0.initialize(
-            platform::Interrupt_Configuration::disabled,
-            platform::Lock_Register::disabled,
-            platform::Pin_Mux_Control::alternative_1_GPIO,
-            platform::Drive_Strength::high,
-            platform::Open_Drain::disabled,
-            platform::Passive_Filter::disabled,
-            platform::Slew_Rate::fast,
-            platform::Internal_Pull::disabled,
-            platform::Pull_Select::down);
+    PORTA_GPCLR.write({0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},
+            Lock_Register::enabled,
+            Pin_Mux_Control::alternative_1_GPIO,
+            Drive_Strength::high,
+            Open_Drain::disabled,
+            Passive_Filter::disabled,
+            Slew_Rate::fast,
+            Internal_Pull::enabled,
+            Pull_Select::down);
 }
