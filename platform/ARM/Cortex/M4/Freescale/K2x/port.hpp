@@ -130,15 +130,20 @@ public:
     }
 };
 
-class GPCxR : public Register
+// Note: this register shares most of its features in common with
+// PORTx_GPCHR.  The compiler currently will not suffer refactoring
+// their commmon behavior into a base class and retain the desired
+// optimization level.  Some amount of copy-pasta results.
+
+class PORTx_GPCLR : public Register
 {
 public:
-    constexpr GPCxR(std::uintptr_t address) : Register{address},
+    constexpr PORTx_GPCLR(std::uintptr_t address) : Register{address},
         LK{address}, MUX{address}, DSE{address}, ODE{address},
         PFE{address}, SRE{address}, PE{address}, PS{address} {}
 
     using Register::write;
-    void write(util::Bitmask   bits,
+    void write(util::Bitmask<std::uint32_t>   bits,
                Lock_Register   lk,
                Pin_Mux_Control mux,
                Drive_Strength  dse,
@@ -146,8 +151,7 @@ public:
                Passive_Filter  pfe,
                Slew_Rate       sre,
                Internal_Pull   pe,
-               Pull_Select     ps)
-    {
+               Pull_Select     ps) {
         this->write( LK.to_word(lk)  |
                     MUX.to_word(mux) |
                     DSE.to_word(dse) |
@@ -156,7 +160,7 @@ public:
                     SRE.to_word(sre) |
                      PE.to_word(pe)  |
                      PS.to_word(ps)  |
-                     bits.mask);
+                     ((bits.mask << 16) & 0xFFFF0000u));
     }
 private:
     Bit<Lock_Register, 15>  LK;
@@ -169,40 +173,91 @@ private:
     Bit<Pull_Select, 0>  PS;
 };
 
-class PORTx_GPCLR : public GPCxR
+class PORTx_GPCHR : public Register
 {
 public:
-    using GPCxR::GPCxR;
-};
+    constexpr PORTx_GPCHR(std::uintptr_t address) : Register{address},
+        LK{address}, MUX{address}, DSE{address}, ODE{address},
+        PFE{address}, SRE{address}, PE{address}, PS{address} {}
 
-class PORTx_GPCHR : public GPCxR
-{
-public:
-    using GPCxR::GPCxR;
+    using Register::write;
+    void write(util::Bitmask<std::uint32_t>   bits,
+               Lock_Register   lk,
+               Pin_Mux_Control mux,
+               Drive_Strength  dse,
+               Open_Drain      ode,
+               Passive_Filter  pfe,
+               Slew_Rate       sre,
+               Internal_Pull   pe,
+               Pull_Select     ps) {
+        this->write( LK.to_word(lk)  |
+                    MUX.to_word(mux) |
+                    DSE.to_word(dse) |
+                    ODE.to_word(ode) |
+                    PFE.to_word(pfe) |
+                    SRE.to_word(sre) |
+                     PE.to_word(pe)  |
+                     PS.to_word(ps)  |
+                     (bits.mask & 0xFFFF0000u));
+    }
+private:
+    Bit<Lock_Register, 15>  LK;
+    Bits<Pin_Mux_Control, 11, 8> MUX;
+    Bit<Drive_Strength, 6>  DSE;
+    Bit<Open_Drain, 5>  ODE;
+    Bit<Passive_Filter, 4>  PFE;
+    Bit<Slew_Rate, 2>  SRE;
+    Bit<Internal_Pull, 1>  PE;
+    Bit<Pull_Select, 0>  PS;
 };
 
 class PORTx_ISFR : public Register
 {
 public:
     constexpr PORTx_ISFR(std::uintptr_t address) : Register{address} {}
+    
+    template <typename... Bits>
+    void clear(Bits... bits) { this->write(util::Bitmask<std::uint32_t>{bits...}.mask); }
+    template <typename... Bits>
+    bool is_set(Bits... pins) { return this->read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
 class PORTx_DFER : public Register
 {
 public:
     constexpr PORTx_DFER(std::uintptr_t address) : Register{address} {}
+
+    template <typename... Bits>
+    void enable_filter_for_pins(Bits... bits) {
+        write(read() | util::Bitmask<std::uint32_t>{bits...}.mask);
+    }
+    template <typename... Bits>
+    void disable_filter_for_pins(Bits... bits) {
+        write(read() & ~util::Bitmask<std::uint32_t>{bits...}.mask);
+    }
+};
+
+enum class Clock_Source : bool
+{
+    bus_clock = false,
+    LPO_1_kHz = true
 };
 
 class PORTx_DFCR : public Register
 {
 public:
-    constexpr PORTx_DFCR(std::uintptr_t address) : Register{address} {}
+    constexpr PORTx_DFCR(std::uintptr_t address) : Register{address}, CS{address} {}
+
+    Bit<Clock_Source, 0> CS;
 };
 
 class PORTx_DFWR : public Register
 {
 public:
     constexpr PORTx_DFWR(std::uintptr_t address) : Register{address} {}
+
+    void write_filter_length(std::uint32_t length) { write(length & 0b11111u); }
+    std::uint32_t read_filter_length() { return read(); }
 };
 
 SYMBOL(PORTx_PCRn,  PORTA_PCR0,  0x4004'9000);

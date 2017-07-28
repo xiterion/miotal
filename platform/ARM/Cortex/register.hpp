@@ -15,7 +15,7 @@ class BitBandedBit : private generic::Bit<T, std::uint32_t, bit>
 public:
     inline constexpr BitBandedBit(std::uintptr_t address);
 
-    T read() const      { return reg.read(); }
+    T read() const      { return static_cast<T>(reg.read()); }
     void set()          { reg.write(1); }
     void clear()        { reg.write(0); }
     void write(T value) { reg.write(value ? 1 : 0); }
@@ -41,8 +41,8 @@ using Bits = generic::Bits<T, std::uint32_t, start_bit, end_bit>;
 
 template <typename T, std::uint32_t bit>
 constexpr BitBandedBit<T, bit>::BitBandedBit(std::uintptr_t address) :
-    generic::Bit<T, std::uint32_t, bit>(address),
-    reg(BitBandAddress(address)) {}
+    generic::Bit<T, std::uint32_t, bit>{address},
+    reg{BitBandAddress(address)} {}
 
 template <typename T, std::uint32_t bit>
 constexpr std::uint32_t

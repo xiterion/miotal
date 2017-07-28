@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <util/bit_manipulation.hpp>
 
 namespace platform {
 namespace generic {
@@ -9,7 +10,7 @@ template <typename T>
 class Register
 {
 public:
-    constexpr Register(std::uintptr_t address) : address(address) {};
+    constexpr Register(std::uintptr_t address) : address{address} {};
 
     T read() const             { return *reinterpret_cast<volatile T*>(address); }
     void write(const T& value) { *reinterpret_cast<volatile T*>(address) = value; }
@@ -57,18 +58,18 @@ private:
 
 template <typename T, typename V, std::uint32_t bit>
 constexpr Bit<T, V, bit>::Bit(std::uintptr_t address) :
-    reg(address), mask(1 << bit) {}
+    reg{address}, mask{1u << bit} {}
 
 // Bits implementation
 
 template <typename T, typename V, std::uint32_t start_bit, std::uint32_t end_bit>
 constexpr Bits<T, V, start_bit, end_bit>::Bits(std::uintptr_t address) :
-    reg(address), mask(bitmask()), shift(end_bit) {}
+    reg{address}, mask{bitmask()}, shift{end_bit} {}
 
 template <typename T, typename V, std::uint32_t start_bit, std::uint32_t end_bit>
 constexpr V Bits<T, V, start_bit, end_bit>::bitmask()
 {
-    return ((1 << (1 + start_bit - end_bit)) - 1) << end_bit;
+    return ((1u << (1u + start_bit - end_bit)) - 1u) << end_bit;
 }
 
 } // namespace generic

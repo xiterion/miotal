@@ -12,7 +12,7 @@ CC        := arm-none-eabi-gcc $(CPU) -c
 CXX       := arm-none-eabi-g++ $(CPU) -c
 CFLAGS    := -I.
 CFLAGS    += -flto -fno-use-cxa-atexit
-CXXFLAGS  := -fno-rtti -fno-exceptions -std=c++17
+CXXFLAGS  := -fno-rtti -fno-exceptions -fno-threadsafe-statics -std=c++17
 
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM

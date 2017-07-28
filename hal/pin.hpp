@@ -4,11 +4,12 @@
 
 namespace hal {
 
-class InterruptCapable {
+class DriveStrengthAdjustable {
 public:
-    virtual void enableInterrupt() = 0;
-    virtual void disableInterrupt() = 0;
-    virtual bool interruptEnabled() = 0;
+    virtual float getDriveStrength() = 0;
+    virtual void setDriveStrengthAbove(float level) = 0;
+    virtual void setDriveStrengthBelow(float level) = 0;
+    virtual void setDriveStrengthBetween(float lower_level, float upper_level) = 0;
 };
 
 class OpenDrainCapable {
