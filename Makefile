@@ -11,13 +11,13 @@ PLATFORM  := platform/ARM/Cortex/M4/Freescale/K2x
 CC        := arm-none-eabi-gcc $(CPU) -c
 CXX       := arm-none-eabi-g++ $(CPU) -c
 CFLAGS    := -I.
-CFLAGS    += -flto -fno-use-cxa-atexit
+CFLAGS    += -flto
 CXXFLAGS  := -fno-rtti -fno-exceptions -fno-threadsafe-statics -std=c++17
 
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc $(CPU) --specs=nosys.specs -nostdlib
+LD        := arm-none-eabi-gcc $(CPU) --specs=nosys.specs
 LDFLAGS   := -flto -T $(PLATFORM)/platform.ld
 
 SIZE      := arm-none-eabi-size
