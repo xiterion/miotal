@@ -6,18 +6,18 @@ default: debug
 V         := @
 
 NAME      := test
-CPU       += -mthumb -mcpu=cortex-m4
+CPU       += -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 PLATFORM  := platform/ARM/Cortex/M4/Freescale/K2x
 CC        := arm-none-eabi-gcc $(CPU) -c
 CXX       := arm-none-eabi-g++ $(CPU) -c
 CFLAGS    := -I.
 CFLAGS    += -flto
-CXXFLAGS  := -fno-rtti -fno-exceptions -fno-threadsafe-statics -std=c++17
+CXXFLAGS  := -fno-rtti -fno-exceptions -std=c++17
 
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc $(CPU) --specs=nosys.specs
+LD        := arm-none-eabi-gcc $(CPU) --specs=nano.specs
 LDFLAGS   := -flto -T $(PLATFORM)/platform.ld
 
 SIZE      := arm-none-eabi-size

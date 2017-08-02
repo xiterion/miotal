@@ -3,20 +3,20 @@
 
 namespace hal {
 
-class GPIO : public DriveStrengthAdjustable,
-             public OpenDrainCapable
+class GPIO : public DriveStrengthAdjustable<GPIO>,
+             public OpenDrainCapable<GPIO>
 {
 public:
     GPIO(platform::PORTx_PCRn pcr) : pcr{pcr} {}
 
-    float getDriveStrength() final { return 0.0f; }
-    void setDriveStrengthAbove(float level) final {}
-    void setDriveStrengthBelow(float level) final {}
-    void setDriveStrengthBetween(float lower_level, float upper_level) final {}
+    float getDriveStrength() { return 0.0f; }
+    void setDriveStrengthAbove(float level) {}
+    void setDriveStrengthBelow(float level) {}
+    void setDriveStrengthBetween(float lower_level, float upper_level) {}
 
-    void enableOpenDrain() final { pcr.ODE.set(); }
-    void disableOpenDrain() final { pcr.ODE.clear(); }
-    bool openDrainEnabled() final { static_cast<bool>(pcr.ODE.read()); }
+    void enableOpenDrain() { pcr.ODE.set(); }
+    void disableOpenDrain() { pcr.ODE.clear(); }
+    bool openDrainEnabled() { static_cast<bool>(pcr.ODE.read()); }
 
 private:
     platform::PORTx_PCRn pcr;

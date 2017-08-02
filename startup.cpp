@@ -19,9 +19,21 @@ extern void SysTick_Handler();
 
 void start()
 {
-    low_level_init(); // call user-defined low level initialization
-    _start(); // Defer to GCCs internal startup mechanism
+    // First, call the user defined initialization.  This can't really
+    // go in the GCC defined init section because the compiler sets
+    // up the runtime first, and by that time the window of opportunity
+    // to perform activities like turn off the watchdog timer within
+    // a certain number of cycles of startup has expired.  This ensures
+    // the user has the ability to perform low level actions on the
+    // hardware prior to any potentially heavy-weight startup actions.
+    low_level_init();
+
+    // The rest of setup and startup of the runtime is handled by the
+    // built in _start and subsequent _mainCRTStartup functions.
+    _start();
 }
+
+[[noreturn]] void _exit(int) { while (1); }
 
 typedef void( *intfunc )();
 extern uintptr_t __c_stack_top__;

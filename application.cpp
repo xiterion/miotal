@@ -4,6 +4,6 @@
 
 int main(void)
 {
-    hal::GPIO gpio{platform::PORTA_PCR2};
+    hal::GPIO gpio{platform::PORTA_PCR0};
     gpio.enableOpenDrain();
 }
