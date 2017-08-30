@@ -17,7 +17,7 @@ CXXFLAGS  := -fno-rtti -fno-exceptions -std=c++17
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc $(CPU) --specs=nano.specs
+LD        := arm-none-eabi-gcc $(CPU) --specs=nano.specs -nostartfiles
 LDFLAGS   := -flto -T $(PLATFORM)/platform.ld
 
 SIZE      := arm-none-eabi-size

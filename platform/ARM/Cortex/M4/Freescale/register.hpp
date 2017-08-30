@@ -6,14 +6,8 @@
 
 namespace platform {
 
-template <typename T, std::uint32_t bit>
-struct W1C : private platform::Bit<T, bit>
-{
-    constexpr W1C(std::uintptr_t address) : platform::Bit<T, bit>{address} {};
-
-    using platform::Bit<T, bit>::read;
-    void clear() { platform::Bit<T, bit>::set(); }
-    using platform::Bit<T, bit>::to_word;
+template <std::size_t offset>
+class W1C : private Bitfield<offset> {
 };
 
 } // namespace platform

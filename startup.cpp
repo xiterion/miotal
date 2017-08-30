@@ -17,6 +17,8 @@ extern void DebugMon_Handler();
 extern void PendSV_Handler();
 extern void SysTick_Handler();
 
+[[noreturn]] void _exit(int) { while (1); }
+
 void start()
 {
     // First, call the user defined initialization.  This can't really
@@ -30,10 +32,9 @@ void start()
 
     // The rest of setup and startup of the runtime is handled by the
     // built in _start and subsequent _mainCRTStartup functions.
-    _start();
+    //_start();
+    _exit(main()); // TODO: switch this back to built in
 }
-
-[[noreturn]] void _exit(int) { while (1); }
 
 typedef void( *intfunc )();
 extern uintptr_t __c_stack_top__;
