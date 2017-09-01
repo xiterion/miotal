@@ -3,24 +3,17 @@
 
 using namespace platform;
 
-#define porta_pcr0 *(volatile uint32_t*)0x4004'9000
+template <typename Port_Pin>
+struct Foo {
+    Port_Pin reg;
+};
+
+template <typename Port_Pin>
+Foo<Port_Pin> make_foo(Port_Pin reg) { return {reg}; }
+
+auto foo = make_foo(PORTA_PCR0);
 
 int main(void)
 {
-#if 1
-    PORTA_PCR0.write(
-            Interrupt_Configuration::interrupt_when_logic_0,
-            Lock_Register::enabled,
-            Pin_Mux_Control::alternative_3,
-            Drive_Strength::low,
-            Open_Drain::disabled,
-            Passive_Filter::enabled,
-            Slew_Rate::slow,
-            Internal_Pull::enabled,
-            Pull_Select::down);
-#else
-    constexpr uint32_t mask  = 0b0000'0000'0000'1111'1000'0111'0111'0111;
-    constexpr uint32_t value = 0b0000'0000'0000'1000'1000'0011'0001'0110;
-    porta_pcr0 = (porta_pcr0 & ~mask) | value;
-#endif
+    foo.reg.LK();
 }

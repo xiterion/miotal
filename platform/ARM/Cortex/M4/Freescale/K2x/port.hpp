@@ -81,9 +81,8 @@ struct Pull_Select : public Bitfield<0> {
 };
 
 template <std::uintptr_t address>
-class PORTx_PCRn : public Register<address>
+struct PORTx_PCRn : public Register<address>
 {
-public:
     //W1C<Interrupt_Status, address, 24> ISF;
     Interrupt_Configuration::Bits<address> IRQC;
     Lock_Register::Bits<address> LK;
@@ -94,31 +93,6 @@ public:
     Slew_Rate::Bits<address> SRE;
     Internal_Pull::Bits<address> PE;
     Pull_Select::Bits<address> PS;
-
-    /*
-
-    using Register::write;
-    void write(Interrupt_Configuration irqc,
-               Lock_Register           lk,
-               Pin_Mux_Control         mux,
-               Drive_Strength          dse,
-               Open_Drain              ode,
-               Passive_Filter          pfe,
-               Slew_Rate               sre,
-               Internal_Pull           pe,
-               Pull_Select             ps)
-    {
-        this->write(IRQC.to_word(irqc) |
-                      LK.to_word(lk)   |
-                     MUX.to_word(mux)  |
-                     DSE.to_word(dse)  |
-                     ODE.to_word(ode)  |
-                     PFE.to_word(pfe)  |
-                     SRE.to_word(sre)  |
-                      PE.to_word(pe)   |
-                      PS.to_word(ps));
-    }
-    */
 };
 
 // Note: this register shares most of its features in common with
