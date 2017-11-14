@@ -1,19 +1,24 @@
 #include <cstdint>
 #include <platform/ARM/Cortex/M4/Freescale/K2x/platform.hpp>
 
-using namespace platform;
-
-template <typename Port_Pin>
-struct Foo {
-    Port_Pin reg;
+struct A {
+    const int val;
+    constexpr A(int val) : val{val} {}
 };
 
-template <typename Port_Pin>
-Foo<Port_Pin> make_foo(Port_Pin reg) { return {reg}; }
+struct B : public A {
+    using A::A;
+};
 
-auto foo = make_foo(PORTA_PCR0);
+struct C {
+    B& b;
+};
+
+B foo{0x12345678};
+C bar{foo};
 
 int main(void)
 {
-    foo.reg.LK();
+    volatile int baz;
+    baz = foo.val;
 }

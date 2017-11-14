@@ -1,108 +1,109 @@
 #pragma once
-#include <type_traits>
-#include <numeric>
 #include "platform.hpp"
-#include <util/bit_manipulation.hpp>
 
-using BitBandEnabled = std::true_type;
+#include <util/bit_manipulation.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/register.hpp>
 
 #if defined(DEFINE_SYMBOLS)
-#define SYMBOL(type, name, ...) type<__VA_ARGS__> name
+#define SYMBOL(type, name, ...) type name {__VA_ARGS__}
 #else // !defined(DEFINE_SYMBOLS)
-#define SYMBOL(type, name, ...) extern type<__VA_ARGS__> name
+#define SYMBOL(type, name, ...) extern type name
 #endif
 
 namespace platform {
 
-struct Interrupt_Status : W1C<24> {
-    enum {
-        not_detected = false,
-        detected = true
-    };
-};
-
-struct Interrupt_Configuration : Bitfield<16, 4> {
-    static constexpr bits_t disabled {0b0000};
-    static constexpr bits_t DMA_request_on_rising_edge {0b0001};
-    static constexpr bits_t DMA_request_on_falling_edge {0b0010};
-    static constexpr bits_t DMA_request_on_either_edge {0b0011};
-    static constexpr bits_t interrupt_when_logic_0 {0b1000};
-    static constexpr bits_t interrupt_on_rising_edge {0b1001};
-    static constexpr bits_t interrupt_on_falling_edge {0b1010};
-    static constexpr bits_t interrupt_on_either_edge {0b1011};
-    static constexpr bits_t interrupt_when_logic_1 {0b1100};
-};
-
-struct Lock_Register : public Bitfield<15> {
-    static constexpr bits_t disabled {false};
-    static constexpr bits_t enabled {true};
-};
-
-struct Pin_Mux_Control : public Bitfield<8, 3> {
-    static constexpr bits_t disabled_analog {0b000};
-    static constexpr bits_t alternative_1_GPIO {0b001};
-    static constexpr bits_t alternative_2 {0b010};
-    static constexpr bits_t alternative_3 {0b011};
-    static constexpr bits_t alternative_4 {0b100};
-    static constexpr bits_t alternative_5 {0b101};
-    static constexpr bits_t alternative_6 {0b110};
-    static constexpr bits_t alternative_7 {0b111};
-};
-
-struct Drive_Strength : public Bitfield<6> {
-    static constexpr bits_t low {false};
-    static constexpr bits_t high {true};
-};
-
-struct Open_Drain : public Bitfield<5> {
-    static constexpr bits_t disabled {false};
-    static constexpr bits_t enabled {true};
-};
-
-struct Passive_Filter : public Bitfield<4> {
-    static constexpr bits_t disabled {false};
-    static constexpr bits_t enabled {true};
-};
-
-struct Slew_Rate : public Bitfield<2> {
-    static constexpr bits_t fast {false};
-    static constexpr bits_t slow {true};
-};
-
-struct Internal_Pull : public Bitfield<1> {
-    static constexpr bits_t disabled {false};
-    static constexpr bits_t enabled  {true};
-};
-
-struct Pull_Select : public Bitfield<0> {
-    static constexpr bits_t down {false};
-    static constexpr bits_t up   {true};
-};
-
-template <std::uintptr_t address>
-struct PORTx_PCRn : public Register<address>
+struct PORTx_PCRn : public Register<PORTx_PCRn>
 {
-    //W1C<Interrupt_Status, address, 24> ISF;
-    Interrupt_Configuration::Bits<address> IRQC;
-    Lock_Register::Bits<address> LK;
-    Pin_Mux_Control::Bits<address> MUX;
-    Drive_Strength::Bits<address> DSE;
-    Open_Drain::Bits<address> ODE;
-    Passive_Filter::Bits<address> PFE;
-    Slew_Rate::Bits<address> SRE;
-    Internal_Pull::Bits<address> PE;
-    Pull_Select::Bits<address> PS;
+    using Register<PORTx_PCRn>::Register;
+
+    using Interrupt_Status = W1C<PORTx_PCRn, 24>;
+    auto ISF() { return Interrupt_Status::read(*this); }
+    void ISF(Interrupt_Status::clear_flag) { Interrupt_Status::clear(*this); }
+    static constexpr Interrupt_Status interrupt_not_active {false};
+    static constexpr Interrupt_Status interrupt_active {true};
+    static constexpr Interrupt_Status::clear_flag clear_interrupt {};
+
+    using Interrupt_Configuration = Bitfield<PORTx_PCRn, 16, 4>;
+    auto IRQC() { return Interrupt_Configuration::read(*this); }
+    void IRQC(Interrupt_Configuration val) { Interrupt_Configuration::write(*this, val); }
+    static constexpr Interrupt_Configuration interrupt_DMA_disabled {0b0000};
+    static constexpr Interrupt_Configuration DMA_request_on_rising_edge {0b0001};
+    static constexpr Interrupt_Configuration DMA_request_on_falling_edge {0b0010};
+    static constexpr Interrupt_Configuration DMA_request_on_either_edge {0b0011};
+    static constexpr Interrupt_Configuration interrupt_when_logic_0 {0b1000};
+    static constexpr Interrupt_Configuration interrupt_on_rising_edge {0b1001};
+    static constexpr Interrupt_Configuration interrupt_on_falling_edge {0b1010};
+    static constexpr Interrupt_Configuration interrupt_on_either_edge {0b1011};
+    static constexpr Interrupt_Configuration interrupt_when_logic_1 {0b1100};
+
+    using Lock_Register = Bitfield<PORTx_PCRn, 15>;
+    auto LK() { return Lock_Register::read(*this); }
+    void LK(Lock_Register val) { Lock_Register::write(*this, val); }
+    static constexpr Lock_Register unlocked {0};
+    static constexpr Lock_Register locked {1};
+
+    using Pin_Mux_Control = Bitfield<PORTx_PCRn, 8, 3>;
+    auto MUX() { return Pin_Mux_Control::read(*this); }
+    void MUX(Pin_Mux_Control val) { Pin_Mux_Control::write(*this, val); }
+    static constexpr Pin_Mux_Control disabled_analog {0b000};
+    static constexpr Pin_Mux_Control alternative_1_GPIO {0b001};
+    static constexpr Pin_Mux_Control alternative_2 {0b010};
+    static constexpr Pin_Mux_Control alternative_3 {0b011};
+    static constexpr Pin_Mux_Control alternative_4 {0b100};
+    static constexpr Pin_Mux_Control alternative_5 {0b101};
+    static constexpr Pin_Mux_Control alternative_6 {0b110};
+    static constexpr Pin_Mux_Control alternative_7 {0b111};
+
+    using Drive_Strength = Bitfield<PORTx_PCRn, 6>;
+    auto DSE() { return Drive_Strength::read(*this); }
+    void DSE(Drive_Strength val) { Drive_Strength::write(*this, val); }
+    static constexpr Drive_Strength low_drive {false};
+    static constexpr Drive_Strength high_drive {true};
+
+    using Open_Drain = Bitfield<PORTx_PCRn, 5>;
+    auto ODE() { return Open_Drain::read(*this); }
+    void ODE(Open_Drain val) { return Open_Drain::write(*this, val); }
+    static constexpr Open_Drain open_drain_disabled {false};
+    static constexpr Open_Drain open_drain_enabled {true};
+
+    using Passive_Filter = Bitfield<PORTx_PCRn, 4>;
+    auto PFE() { return Passive_Filter::read(*this); }
+    void PFE(Passive_Filter val) { return Passive_Filter::write(*this, val); }
+    static constexpr Passive_Filter passive_filter_disabled {false};
+    static constexpr Passive_Filter passive_filter_enabled {true};
+
+    using Slew_Rate = Bitfield<PORTx_PCRn, 2>;
+    auto SRE() { return Slew_Rate::read(*this); }
+    void SRE(Slew_Rate val) { Slew_Rate::write(*this, val); }
+    static constexpr Slew_Rate fast_slew_rate {false};
+    static constexpr Slew_Rate slow_slew_rate {true};
+
+    using Internal_Pull = Bitfield<PORTx_PCRn, 1>;
+    auto PE() { return Internal_Pull::read(*this); }
+    void PE(Internal_Pull val) { Internal_Pull::write(*this, val); }
+    static constexpr Internal_Pull internal_pull_disabled {false};
+    static constexpr Internal_Pull internal_pull_enabled  {true};
+
+    using Pull_Select = Bitfield<PORTx_PCRn, 0>;
+    auto PS() { return Pull_Select::read(*this); }
+    void PS(Pull_Select val) { Pull_Select::write(*this, val); }
+    static constexpr Pull_Select pull_down {false};
+    static constexpr Pull_Select pull_up   {true};
 };
 
+#if 0
 // Note: this register shares most of its features in common with
 // PORTx_GPCHR.  The compiler currently will not suffer refactoring
 // their commmon behavior into a base class and retain the desired
 // optimization level.  Some amount of copy-pasta results.
 
 template <std::uintptr_t address>
-class PORTx_GPCLR : public Register<address>
+class PORTx_GPCLR : public Register<address, PORTx_GPCLR<address>>
 {
+    public:
+    using Lock_Register = Bitfield<PORTx_GPCLR, 15>;
+    static constexpr Lock_Register unlocked {0};
+    static constexpr Lock_Register locked {1};
     /*
 public:
     constexpr PORTx_GPCLR(std::uintptr_t address) : Register{address},
@@ -142,7 +143,7 @@ private:
 };
 
 template <std::uintptr_t address>
-class PORTx_GPCHR : public Register<address>
+class PORTx_GPCHR : public Register<address, PORTx_GPCHR<address>>
 {
     /*
 public:
@@ -183,7 +184,7 @@ private:
 };
 
 template <std::uintptr_t address>
-class PORTx_ISFR : public Register<address>
+class PORTx_ISFR : public Register<address, PORTx_ISFR<address>>
 {
     /*
 public:
@@ -197,7 +198,7 @@ public:
 };
 
 template <std::uintptr_t address>
-class PORTx_DFER : public Register<address>
+class PORTx_DFER : public Register<address, PORTx_DFER<address>>
 {
     /*
 public:
@@ -221,7 +222,7 @@ enum class Clock_Source : bool
 };
 
 template <std::uintptr_t address>
-class PORTx_DFCR : public Register<address>
+class PORTx_DFCR : public Register<address, PORTx_DFCR<address>>
 {
     /*
 public:
@@ -232,7 +233,7 @@ public:
 };
 
 template <std::uintptr_t address>
-class PORTx_DFWR : public Register<address>
+class PORTx_DFWR : public Register<address, PORTx_DFWR<address>>
 {
     /*
 public:
@@ -242,9 +243,10 @@ public:
     std::uint32_t read_filter_length() { return read(); }
     */
 };
-
+#endif
 SYMBOL(PORTx_PCRn,  PORTA_PCR0,  0x4004'9000);
 SYMBOL(PORTx_PCRn,  PORTA_PCR1,  0x4004'9004);
+/*
 SYMBOL(PORTx_PCRn,  PORTA_PCR2,  0x4004'9008);
 SYMBOL(PORTx_PCRn,  PORTA_PCR3,  0x4004'900C);
 SYMBOL(PORTx_PCRn,  PORTA_PCR4,  0x4004'9010);
@@ -437,7 +439,7 @@ SYMBOL(PORTx_ISFR,  PORTE_ISFR,  0x4004'D0A0);
 SYMBOL(PORTx_DFER,  PORTE_DFER,  0x4004'D0C0);
 SYMBOL(PORTx_DFCR,  PORTE_DFCR,  0x4004'D0C4);
 SYMBOL(PORTx_DFWR,  PORTE_DFWR,  0x4004'D0C8);
-
+*/
 } // namespace platform
 
 #undef SYMBOL
