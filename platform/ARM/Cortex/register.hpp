@@ -19,7 +19,7 @@ template <typename T, typename Reg, std::size_t offset>
 struct Generic_Bitfield<T, Reg, offset, 1> {
     typedef Reg register_t;
 
-    T value;
+    const T value;
 
     static constexpr T mask {1u << offset};
     static constexpr std::size_t shift {offset};
@@ -27,17 +27,17 @@ struct Generic_Bitfield<T, Reg, offset, 1> {
     constexpr Generic_Bitfield(T raw) : value{raw} {}
     constexpr Generic_Bitfield(Reg r) : value{r} {}
 
-    inline static constexpr std::uintptr_t bitband_address(Reg& instance);
-    static Generic_Bitfield read(Reg& instance) {
+    inline static constexpr std::uintptr_t bitband_address(const Reg& instance);
+    static Generic_Bitfield read(const Reg& instance) {
         return {Generic_Register<std::uint32_t, Reg>{bitband_address(instance)}.read()};
     }
-    static void write(Reg& instance, Generic_Bitfield val) {
+    static void write(const Reg& instance, Generic_Bitfield val) {
         Generic_Register<std::uint32_t, Reg>{bitband_address(instance)}.write(val.value);
     }
 };
 
 template <typename T, typename Reg, std::size_t offset>
-constexpr std::uintptr_t Generic_Bitfield<T, Reg, offset, 1>::bitband_address(Reg& instance) {
+constexpr std::uintptr_t Generic_Bitfield<T, Reg, offset, 1>::bitband_address(const Reg& instance) {
     if((0x2000'0000 <= instance.address) and (instance.address < 0x2010'0000)) {
         return 0x2200'0000 + (((instance.address - 0x2000'0000) * 32) + (offset * 4));
     }

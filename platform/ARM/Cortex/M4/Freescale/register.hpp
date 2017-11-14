@@ -11,7 +11,7 @@ struct W1C : private Bitfield<Reg, offset> {
     using Bitfield<Reg, offset>::Bitfield;
     using Bitfield<Reg, offset>::read;
     struct clear_flag {};
-    static void clear(Reg& instance) { Bitfield<Reg, offset>::write(instance, 1); }
+    static void clear(const Reg& instance) { Bitfield<Reg, offset>::write(instance, 1); }
 };
 
 } // namespace platform
