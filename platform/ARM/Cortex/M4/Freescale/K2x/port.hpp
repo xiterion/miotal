@@ -1,19 +1,33 @@
 #pragma once
-#include "platform.hpp"
 
 #include <util/bit_manipulation.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/register.hpp>
 
-#if defined(DEFINE_SYMBOLS)
-#define REGISTER(type, name, ...) extern const type name {__VA_ARGS__}
-#else // !defined(DEFINE_SYMBOLS)
-#define REGISTER(type, name, ...) extern const type name;
-#endif
+/* W1C bitfield
+   using field_type = W1C<register_name, offset>;
+   auto field_name const { return field_type::read(*this); }
+   auto field_name(field_type::clear_flag) const { field_type::clear(*this); }
+   static constexpr field_type name {value};
+   static constexpr field_type::clear_flag name {};
+*/
 
-namespace platform {
+/* Single bit
+   using field_type = Bitfield<register_name, offset>;
+   auto field_name const { return field_type::read(*this); }
+   auto field_name(field_type val) const { field_type::write(*this, val); }
+   static constexpr field_type name {value};
+*/
 
-struct PORTx_PCRn : public Register<PORTx_PCRn>
-{
+/* Multi-bit
+   using field_type = Bitfield<register_name, offset, length>;
+   auto field_name const { return field_type::read(*this); }
+   auto field_name(field_type val) const { field_type::write(*this, val); }
+   static constexpr field_type name {value};
+*/
+
+namespace platform::port {
+
+struct PORTx_PCRn : public Register<PORTx_PCRn> {
     using Register<PORTx_PCRn>::Register;
 
     using Interrupt_Status = W1C<PORTx_PCRn, 24>;
@@ -91,52 +105,93 @@ struct PORTx_PCRn : public Register<PORTx_PCRn>
     static constexpr Pull_Select pull_up   {true};
 };
 
-// Note: this register shares most of its features in common with
-// PORTx_GPCHR.  The compiler currently will not suffer refactoring
-// their commmon behavior into a base class and retain the desired
-// optimization level.  Some amount of copy-pasta results.
+struct PORTx_GPCyR : public Register<PORTx_GPCyR> {
+    using Register<PORTx_GPCyR>::Register;
 
-class PORTx_GPCLR : public Register<PORTx_GPCLR>
-{
-public:
-    using Register<PORTx_GPCLR>::Register;
+    using Lock_Register = Bitfield<PORTx_GPCyR, 15>;
+    static constexpr Lock_Register unlocked {0};
+    static constexpr Lock_Register locked {1};
+
+    using Pin_Mux_Control = Bitfield<PORTx_GPCyR, 8, 3>;
+    static constexpr Pin_Mux_Control disabled_analog {0b000};
+    static constexpr Pin_Mux_Control alternative_1_GPIO {0b001};
+    static constexpr Pin_Mux_Control alternative_2 {0b010};
+    static constexpr Pin_Mux_Control alternative_3 {0b011};
+    static constexpr Pin_Mux_Control alternative_4 {0b100};
+    static constexpr Pin_Mux_Control alternative_5 {0b101};
+    static constexpr Pin_Mux_Control alternative_6 {0b110};
+    static constexpr Pin_Mux_Control alternative_7 {0b111};
+
+    using Drive_Strength = Bitfield<PORTx_GPCyR, 6>;
+    static constexpr Drive_Strength low_drive {false};
+    static constexpr Drive_Strength high_drive {true};
+
+    using Open_Drain = Bitfield<PORTx_GPCyR, 5>;
+    static constexpr Open_Drain open_drain_disabled {false};
+    static constexpr Open_Drain open_drain_enabled {true};
+
+    using Passive_Filter = Bitfield<PORTx_GPCyR, 4>;
+    static constexpr Passive_Filter passive_filter_disabled {false};
+    static constexpr Passive_Filter passive_filter_enabled {true};
+
+    using Slew_Rate = Bitfield<PORTx_GPCyR, 2>;
+    static constexpr Slew_Rate fast_slew_rate {false};
+    static constexpr Slew_Rate slow_slew_rate {true};
+
+    using Internal_Pull = Bitfield<PORTx_GPCyR, 1>;
+    static constexpr Internal_Pull internal_pull_disabled {false};
+    static constexpr Internal_Pull internal_pull_enabled  {true};
+
+    using Pull_Select = Bitfield<PORTx_GPCyR, 0>;
+    static constexpr Pull_Select pull_down {false};
+    static constexpr Pull_Select pull_up   {true};
 };
 
-class PORTx_GPCHR : public Register<PORTx_GPCHR>
-{
-public:
-    using Register<PORTx_GPCHR>::Register;
+struct PORTx_GPCLR : public PORTx_GPCyR {
+    using PORTx_GPCyR::PORTx_GPCyR;
+
+    template <typename... Args>
+    std::enable_if_t<
+        std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCLR>...>::value>
+    set(const util::Bitmask<std::uint32_t> bits, const Args... args) const {
+        write((bits.mask << 16) | value(args...));
+    }
 };
 
-class PORTx_ISFR : public Register<PORTx_ISFR>
-{
-public:
+struct PORTx_GPCHR : public PORTx_GPCyR {
+    using PORTx_GPCyR::PORTx_GPCyR;
+
+    template <typename... Args>
+    std::enable_if_t<
+        std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCHR>...>::value>
+    set(util::Bitmask<std::uint32_t> bits, Args... args) const {
+        write(bits.mask | value(args...));
+    }
+};
+
+struct PORTx_ISFR : public Register<PORTx_ISFR> {
     using Register<PORTx_ISFR>::Register;
 
     template <typename... Bits>
-    void clear(Bits... bits) { this->write(util::Bitmask<std::uint32_t>{bits...}.mask); }
+    void clear(Bits... bits) const { write(util::Bitmask<std::uint32_t>{bits...}.mask); }
     template <typename... Bits>
-    bool is_set(Bits... pins) { return this->read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
+    bool is_set(Bits... pins) const { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
-class PORTx_DFER : public Register<PORTx_DFER>
-{
-public:
+struct PORTx_DFER : public Register<PORTx_DFER> {
     using Register<PORTx_DFER>::Register;
 
     template <typename... Bits>
-    void enable_filter_for_pins(Bits... bits) {
+    void enable_filter_for_pins(Bits... bits) const {
         write(read() | util::Bitmask<std::uint32_t>{bits...}.mask);
     }
     template <typename... Bits>
-    void disable_filter_for_pins(Bits... bits) {
+    void disable_filter_for_pins(Bits... bits) const {
         write(read() & ~util::Bitmask<std::uint32_t>{bits...}.mask);
     }
 };
 
-class PORTx_DFCR : public Register<PORTx_DFCR>
-{
-public:
+struct PORTx_DFCR : public Register<PORTx_DFCR> {
     using Register<PORTx_DFCR>::Register;
 
     using Clock_Source = Bitfield<PORTx_DFCR, 0>;
@@ -146,210 +201,206 @@ public:
     static constexpr Clock_Source LPO_1_kHz {true};
 };
 
-class PORTx_DFWR : public Register<PORTx_DFWR>
-{
-public:
+struct PORTx_DFWR : public Register<PORTx_DFWR> {
     using Register<PORTx_DFWR>::Register;
 
     void write_filter_length(std::uint32_t length) { write(length & 0b11111u); }
     std::uint32_t read_filter_length() { return read(); }
 };
 
-REGISTER(PORTx_PCRn,  PORTA_PCR0,  0x4004'9000);
-REGISTER(PORTx_PCRn,  PORTA_PCR1,  0x4004'9004);
-REGISTER(PORTx_PCRn,  PORTA_PCR2,  0x4004'9008);
-REGISTER(PORTx_PCRn,  PORTA_PCR3,  0x4004'900C);
-REGISTER(PORTx_PCRn,  PORTA_PCR4,  0x4004'9010);
-REGISTER(PORTx_PCRn,  PORTA_PCR5,  0x4004'9014);
-REGISTER(PORTx_PCRn,  PORTA_PCR6,  0x4004'9018);
-REGISTER(PORTx_PCRn,  PORTA_PCR7,  0x4004'901C);
-REGISTER(PORTx_PCRn,  PORTA_PCR8,  0x4004'9020);
-REGISTER(PORTx_PCRn,  PORTA_PCR9,  0x4004'9024);
-REGISTER(PORTx_PCRn,  PORTA_PCR10, 0x4004'9028);
-REGISTER(PORTx_PCRn,  PORTA_PCR11, 0x4004'902C);
-REGISTER(PORTx_PCRn,  PORTA_PCR12, 0x4004'9030);
-REGISTER(PORTx_PCRn,  PORTA_PCR13, 0x4004'9034);
-REGISTER(PORTx_PCRn,  PORTA_PCR14, 0x4004'9038);
-REGISTER(PORTx_PCRn,  PORTA_PCR15, 0x4004'903C);
-REGISTER(PORTx_PCRn,  PORTA_PCR16, 0x4004'9040);
-REGISTER(PORTx_PCRn,  PORTA_PCR17, 0x4004'9044);
-REGISTER(PORTx_PCRn,  PORTA_PCR18, 0x4004'9048);
-REGISTER(PORTx_PCRn,  PORTA_PCR19, 0x4004'904C);
-REGISTER(PORTx_PCRn,  PORTA_PCR20, 0x4004'9050);
-REGISTER(PORTx_PCRn,  PORTA_PCR21, 0x4004'9054);
-REGISTER(PORTx_PCRn,  PORTA_PCR22, 0x4004'9058);
-REGISTER(PORTx_PCRn,  PORTA_PCR23, 0x4004'905C);
-REGISTER(PORTx_PCRn,  PORTA_PCR24, 0x4004'9060);
-REGISTER(PORTx_PCRn,  PORTA_PCR25, 0x4004'9064);
-REGISTER(PORTx_PCRn,  PORTA_PCR26, 0x4004'9068);
-REGISTER(PORTx_PCRn,  PORTA_PCR27, 0x4004'906C);
-REGISTER(PORTx_PCRn,  PORTA_PCR28, 0x4004'9070);
-REGISTER(PORTx_PCRn,  PORTA_PCR29, 0x4004'9074);
-REGISTER(PORTx_PCRn,  PORTA_PCR30, 0x4004'9078);
-REGISTER(PORTx_PCRn,  PORTA_PCR31, 0x4004'907C);
-REGISTER(PORTx_GPCLR, PORTA_GPCLR, 0x4004'9080);
-REGISTER(PORTx_GPCHR, PORTA_GPCHR, 0x4004'9084);
-REGISTER(PORTx_ISFR,  PORTA_ISFR,  0x4004'90A0);
-REGISTER(PORTx_DFER,  PORTA_DFER,  0x4004'90C0);
-REGISTER(PORTx_DFCR,  PORTA_DFCR,  0x4004'90C4);
-REGISTER(PORTx_DFWR,  PORTA_DFWR,  0x4004'90C8);
+extern const PORTx_PCRn PORTA_PCR0;
+extern const PORTx_PCRn PORTA_PCR1;
+extern const PORTx_PCRn PORTA_PCR2;
+extern const PORTx_PCRn PORTA_PCR3;
+extern const PORTx_PCRn PORTA_PCR4;
+extern const PORTx_PCRn PORTA_PCR5;
+extern const PORTx_PCRn PORTA_PCR6;
+extern const PORTx_PCRn PORTA_PCR7;
+extern const PORTx_PCRn PORTA_PCR8;
+extern const PORTx_PCRn PORTA_PCR9;
+extern const PORTx_PCRn PORTA_PCR10;
+extern const PORTx_PCRn PORTA_PCR11;
+extern const PORTx_PCRn PORTA_PCR12;
+extern const PORTx_PCRn PORTA_PCR13;
+extern const PORTx_PCRn PORTA_PCR14;
+extern const PORTx_PCRn PORTA_PCR15;
+extern const PORTx_PCRn PORTA_PCR16;
+extern const PORTx_PCRn PORTA_PCR17;
+extern const PORTx_PCRn PORTA_PCR18;
+extern const PORTx_PCRn PORTA_PCR19;
+extern const PORTx_PCRn PORTA_PCR20;
+extern const PORTx_PCRn PORTA_PCR21;
+extern const PORTx_PCRn PORTA_PCR22;
+extern const PORTx_PCRn PORTA_PCR23;
+extern const PORTx_PCRn PORTA_PCR24;
+extern const PORTx_PCRn PORTA_PCR25;
+extern const PORTx_PCRn PORTA_PCR26;
+extern const PORTx_PCRn PORTA_PCR27;
+extern const PORTx_PCRn PORTA_PCR28;
+extern const PORTx_PCRn PORTA_PCR29;
+extern const PORTx_PCRn PORTA_PCR30;
+extern const PORTx_PCRn PORTA_PCR31;
+extern const PORTx_GPCLR PORTA_GPCLR;
+extern const PORTx_GPCHR PORTA_GPCHR;
+extern const PORTx_ISFR PORTA_ISFR;
+extern const PORTx_DFER PORTA_DFER;
+extern const PORTx_DFCR PORTA_DFCR;
+extern const PORTx_DFWR PORTA_DFWR;
 
-REGISTER(PORTx_PCRn,  PORTB_PCR0,  0x4004'A000);
-REGISTER(PORTx_PCRn,  PORTB_PCR1,  0x4004'A004);
-REGISTER(PORTx_PCRn,  PORTB_PCR2,  0x4004'A008);
-REGISTER(PORTx_PCRn,  PORTB_PCR3,  0x4004'A00C);
-REGISTER(PORTx_PCRn,  PORTB_PCR4,  0x4004'A010);
-REGISTER(PORTx_PCRn,  PORTB_PCR5,  0x4004'A014);
-REGISTER(PORTx_PCRn,  PORTB_PCR6,  0x4004'A018);
-REGISTER(PORTx_PCRn,  PORTB_PCR7,  0x4004'A01C);
-REGISTER(PORTx_PCRn,  PORTB_PCR8,  0x4004'A020);
-REGISTER(PORTx_PCRn,  PORTB_PCR9,  0x4004'A024);
-REGISTER(PORTx_PCRn,  PORTB_PCR10, 0x4004'A028);
-REGISTER(PORTx_PCRn,  PORTB_PCR11, 0x4004'A02C);
-REGISTER(PORTx_PCRn,  PORTB_PCR12, 0x4004'A030);
-REGISTER(PORTx_PCRn,  PORTB_PCR13, 0x4004'A034);
-REGISTER(PORTx_PCRn,  PORTB_PCR14, 0x4004'A038);
-REGISTER(PORTx_PCRn,  PORTB_PCR15, 0x4004'A03C);
-REGISTER(PORTx_PCRn,  PORTB_PCR16, 0x4004'A040);
-REGISTER(PORTx_PCRn,  PORTB_PCR17, 0x4004'A044);
-REGISTER(PORTx_PCRn,  PORTB_PCR18, 0x4004'A048);
-REGISTER(PORTx_PCRn,  PORTB_PCR19, 0x4004'A04C);
-REGISTER(PORTx_PCRn,  PORTB_PCR20, 0x4004'A050);
-REGISTER(PORTx_PCRn,  PORTB_PCR21, 0x4004'A054);
-REGISTER(PORTx_PCRn,  PORTB_PCR22, 0x4004'A058);
-REGISTER(PORTx_PCRn,  PORTB_PCR23, 0x4004'A05C);
-REGISTER(PORTx_PCRn,  PORTB_PCR24, 0x4004'A060);
-REGISTER(PORTx_PCRn,  PORTB_PCR25, 0x4004'A064);
-REGISTER(PORTx_PCRn,  PORTB_PCR26, 0x4004'A068);
-REGISTER(PORTx_PCRn,  PORTB_PCR27, 0x4004'A06C);
-REGISTER(PORTx_PCRn,  PORTB_PCR28, 0x4004'A070);
-REGISTER(PORTx_PCRn,  PORTB_PCR29, 0x4004'A074);
-REGISTER(PORTx_PCRn,  PORTB_PCR30, 0x4004'A078);
-REGISTER(PORTx_PCRn,  PORTB_PCR31, 0x4004'A07C);
-REGISTER(PORTx_GPCLR, PORTB_GPCLR, 0x4004'A080);
-REGISTER(PORTx_GPCHR, PORTB_GPCHR, 0x4004'A084);
-REGISTER(PORTx_ISFR,  PORTB_ISFR,  0x4004'A0A0);
-REGISTER(PORTx_DFER,  PORTB_DFER,  0x4004'A0C0);
-REGISTER(PORTx_DFCR,  PORTB_DFCR,  0x4004'A0C4);
-REGISTER(PORTx_DFWR,  PORTB_DFWR,  0x4004'A0C8);
+extern const PORTx_PCRn PORTB_PCR0;
+extern const PORTx_PCRn PORTB_PCR1;
+extern const PORTx_PCRn PORTB_PCR2;
+extern const PORTx_PCRn PORTB_PCR3;
+extern const PORTx_PCRn PORTB_PCR4;
+extern const PORTx_PCRn PORTB_PCR5;
+extern const PORTx_PCRn PORTB_PCR6;
+extern const PORTx_PCRn PORTB_PCR7;
+extern const PORTx_PCRn PORTB_PCR8;
+extern const PORTx_PCRn PORTB_PCR9;
+extern const PORTx_PCRn PORTB_PCR10;
+extern const PORTx_PCRn PORTB_PCR11;
+extern const PORTx_PCRn PORTB_PCR12;
+extern const PORTx_PCRn PORTB_PCR13;
+extern const PORTx_PCRn PORTB_PCR14;
+extern const PORTx_PCRn PORTB_PCR15;
+extern const PORTx_PCRn PORTB_PCR16;
+extern const PORTx_PCRn PORTB_PCR17;
+extern const PORTx_PCRn PORTB_PCR18;
+extern const PORTx_PCRn PORTB_PCR19;
+extern const PORTx_PCRn PORTB_PCR20;
+extern const PORTx_PCRn PORTB_PCR21;
+extern const PORTx_PCRn PORTB_PCR22;
+extern const PORTx_PCRn PORTB_PCR23;
+extern const PORTx_PCRn PORTB_PCR24;
+extern const PORTx_PCRn PORTB_PCR25;
+extern const PORTx_PCRn PORTB_PCR26;
+extern const PORTx_PCRn PORTB_PCR27;
+extern const PORTx_PCRn PORTB_PCR28;
+extern const PORTx_PCRn PORTB_PCR29;
+extern const PORTx_PCRn PORTB_PCR30;
+extern const PORTx_PCRn PORTB_PCR31;
+extern const PORTx_GPCLR PORTB_GPCLR;
+extern const PORTx_GPCHR PORTB_GPCHR;
+extern const PORTx_ISFR PORTB_ISFR;
+extern const PORTx_DFER PORTB_DFER;
+extern const PORTx_DFCR PORTB_DFCR;
+extern const PORTx_DFWR PORTB_DFWR;
 
-REGISTER(PORTx_PCRn,  PORTC_PCR0,  0x4004'B000);
-REGISTER(PORTx_PCRn,  PORTC_PCR1,  0x4004'B004);
-REGISTER(PORTx_PCRn,  PORTC_PCR2,  0x4004'B008);
-REGISTER(PORTx_PCRn,  PORTC_PCR3,  0x4004'B00C);
-REGISTER(PORTx_PCRn,  PORTC_PCR4,  0x4004'B010);
-REGISTER(PORTx_PCRn,  PORTC_PCR5,  0x4004'B014);
-REGISTER(PORTx_PCRn,  PORTC_PCR6,  0x4004'B018);
-REGISTER(PORTx_PCRn,  PORTC_PCR7,  0x4004'B01C);
-REGISTER(PORTx_PCRn,  PORTC_PCR8,  0x4004'B020);
-REGISTER(PORTx_PCRn,  PORTC_PCR9,  0x4004'B024);
-REGISTER(PORTx_PCRn,  PORTC_PCR10, 0x4004'B028);
-REGISTER(PORTx_PCRn,  PORTC_PCR11, 0x4004'B02C);
-REGISTER(PORTx_PCRn,  PORTC_PCR12, 0x4004'B030);
-REGISTER(PORTx_PCRn,  PORTC_PCR13, 0x4004'B034);
-REGISTER(PORTx_PCRn,  PORTC_PCR14, 0x4004'B038);
-REGISTER(PORTx_PCRn,  PORTC_PCR15, 0x4004'B03C);
-REGISTER(PORTx_PCRn,  PORTC_PCR16, 0x4004'B040);
-REGISTER(PORTx_PCRn,  PORTC_PCR17, 0x4004'B044);
-REGISTER(PORTx_PCRn,  PORTC_PCR18, 0x4004'B048);
-REGISTER(PORTx_PCRn,  PORTC_PCR19, 0x4004'B04C);
-REGISTER(PORTx_PCRn,  PORTC_PCR20, 0x4004'B050);
-REGISTER(PORTx_PCRn,  PORTC_PCR21, 0x4004'B054);
-REGISTER(PORTx_PCRn,  PORTC_PCR22, 0x4004'B058);
-REGISTER(PORTx_PCRn,  PORTC_PCR23, 0x4004'B05C);
-REGISTER(PORTx_PCRn,  PORTC_PCR24, 0x4004'B060);
-REGISTER(PORTx_PCRn,  PORTC_PCR25, 0x4004'B064);
-REGISTER(PORTx_PCRn,  PORTC_PCR26, 0x4004'B068);
-REGISTER(PORTx_PCRn,  PORTC_PCR27, 0x4004'B06C);
-REGISTER(PORTx_PCRn,  PORTC_PCR28, 0x4004'B070);
-REGISTER(PORTx_PCRn,  PORTC_PCR29, 0x4004'B074);
-REGISTER(PORTx_PCRn,  PORTC_PCR30, 0x4004'B078);
-REGISTER(PORTx_PCRn,  PORTC_PCR31, 0x4004'B07C);
-REGISTER(PORTx_GPCLR, PORTC_GPCLR, 0x4004'B080);
-REGISTER(PORTx_GPCHR, PORTC_GPCHR, 0x4004'B084);
-REGISTER(PORTx_ISFR,  PORTC_ISFR,  0x4004'B0A0);
-REGISTER(PORTx_DFER,  PORTC_DFER,  0x4004'B0C0);
-REGISTER(PORTx_DFCR,  PORTC_DFCR,  0x4004'B0C4);
-REGISTER(PORTx_DFWR,  PORTC_DFWR,  0x4004'B0C8);
+extern const PORTx_PCRn PORTC_PCR0;
+extern const PORTx_PCRn PORTC_PCR1;
+extern const PORTx_PCRn PORTC_PCR2;
+extern const PORTx_PCRn PORTC_PCR3;
+extern const PORTx_PCRn PORTC_PCR4;
+extern const PORTx_PCRn PORTC_PCR5;
+extern const PORTx_PCRn PORTC_PCR6;
+extern const PORTx_PCRn PORTC_PCR7;
+extern const PORTx_PCRn PORTC_PCR8;
+extern const PORTx_PCRn PORTC_PCR9;
+extern const PORTx_PCRn PORTC_PCR10;
+extern const PORTx_PCRn PORTC_PCR11;
+extern const PORTx_PCRn PORTC_PCR12;
+extern const PORTx_PCRn PORTC_PCR13;
+extern const PORTx_PCRn PORTC_PCR14;
+extern const PORTx_PCRn PORTC_PCR15;
+extern const PORTx_PCRn PORTC_PCR16;
+extern const PORTx_PCRn PORTC_PCR17;
+extern const PORTx_PCRn PORTC_PCR18;
+extern const PORTx_PCRn PORTC_PCR19;
+extern const PORTx_PCRn PORTC_PCR20;
+extern const PORTx_PCRn PORTC_PCR21;
+extern const PORTx_PCRn PORTC_PCR22;
+extern const PORTx_PCRn PORTC_PCR23;
+extern const PORTx_PCRn PORTC_PCR24;
+extern const PORTx_PCRn PORTC_PCR25;
+extern const PORTx_PCRn PORTC_PCR26;
+extern const PORTx_PCRn PORTC_PCR27;
+extern const PORTx_PCRn PORTC_PCR28;
+extern const PORTx_PCRn PORTC_PCR29;
+extern const PORTx_PCRn PORTC_PCR30;
+extern const PORTx_PCRn PORTC_PCR31;
+extern const PORTx_GPCLR PORTC_GPCLR;
+extern const PORTx_GPCHR PORTC_GPCHR;
+extern const PORTx_ISFR PORTC_ISFR;
+extern const PORTx_DFER PORTC_DFER;
+extern const PORTx_DFCR PORTC_DFCR;
+extern const PORTx_DFWR PORTC_DFWR;
 
-REGISTER(PORTx_PCRn,  PORTD_PCR0,  0x4004'C000);
-REGISTER(PORTx_PCRn,  PORTD_PCR1,  0x4004'C004);
-REGISTER(PORTx_PCRn,  PORTD_PCR2,  0x4004'C008);
-REGISTER(PORTx_PCRn,  PORTD_PCR3,  0x4004'C00C);
-REGISTER(PORTx_PCRn,  PORTD_PCR4,  0x4004'C010);
-REGISTER(PORTx_PCRn,  PORTD_PCR5,  0x4004'C014);
-REGISTER(PORTx_PCRn,  PORTD_PCR6,  0x4004'C018);
-REGISTER(PORTx_PCRn,  PORTD_PCR7,  0x4004'C01C);
-REGISTER(PORTx_PCRn,  PORTD_PCR8,  0x4004'C020);
-REGISTER(PORTx_PCRn,  PORTD_PCR9,  0x4004'C024);
-REGISTER(PORTx_PCRn,  PORTD_PCR10, 0x4004'C028);
-REGISTER(PORTx_PCRn,  PORTD_PCR11, 0x4004'C02C);
-REGISTER(PORTx_PCRn,  PORTD_PCR12, 0x4004'C030);
-REGISTER(PORTx_PCRn,  PORTD_PCR13, 0x4004'C034);
-REGISTER(PORTx_PCRn,  PORTD_PCR14, 0x4004'C038);
-REGISTER(PORTx_PCRn,  PORTD_PCR15, 0x4004'C03C);
-REGISTER(PORTx_PCRn,  PORTD_PCR16, 0x4004'C040);
-REGISTER(PORTx_PCRn,  PORTD_PCR17, 0x4004'C044);
-REGISTER(PORTx_PCRn,  PORTD_PCR18, 0x4004'C048);
-REGISTER(PORTx_PCRn,  PORTD_PCR19, 0x4004'C04C);
-REGISTER(PORTx_PCRn,  PORTD_PCR20, 0x4004'C050);
-REGISTER(PORTx_PCRn,  PORTD_PCR21, 0x4004'C054);
-REGISTER(PORTx_PCRn,  PORTD_PCR22, 0x4004'C058);
-REGISTER(PORTx_PCRn,  PORTD_PCR23, 0x4004'C05C);
-REGISTER(PORTx_PCRn,  PORTD_PCR24, 0x4004'C060);
-REGISTER(PORTx_PCRn,  PORTD_PCR25, 0x4004'C064);
-REGISTER(PORTx_PCRn,  PORTD_PCR26, 0x4004'C068);
-REGISTER(PORTx_PCRn,  PORTD_PCR27, 0x4004'C06C);
-REGISTER(PORTx_PCRn,  PORTD_PCR28, 0x4004'C070);
-REGISTER(PORTx_PCRn,  PORTD_PCR29, 0x4004'C074);
-REGISTER(PORTx_PCRn,  PORTD_PCR30, 0x4004'C078);
-REGISTER(PORTx_PCRn,  PORTD_PCR31, 0x4004'C07C);
-REGISTER(PORTx_GPCLR, PORTD_GPCLR, 0x4004'C080);
-REGISTER(PORTx_GPCHR, PORTD_GPCHR, 0x4004'C084);
-REGISTER(PORTx_ISFR,  PORTD_ISFR,  0x4004'C0A0);
-REGISTER(PORTx_DFER,  PORTD_DFER,  0x4004'C0C0);
-REGISTER(PORTx_DFCR,  PORTD_DFCR,  0x4004'C0C4);
-REGISTER(PORTx_DFWR,  PORTD_DFWR,  0x4004'C0C8);
+extern const PORTx_PCRn PORTD_PCR0;
+extern const PORTx_PCRn PORTD_PCR1;
+extern const PORTx_PCRn PORTD_PCR2;
+extern const PORTx_PCRn PORTD_PCR3;
+extern const PORTx_PCRn PORTD_PCR4;
+extern const PORTx_PCRn PORTD_PCR5;
+extern const PORTx_PCRn PORTD_PCR6;
+extern const PORTx_PCRn PORTD_PCR7;
+extern const PORTx_PCRn PORTD_PCR8;
+extern const PORTx_PCRn PORTD_PCR9;
+extern const PORTx_PCRn PORTD_PCR10;
+extern const PORTx_PCRn PORTD_PCR11;
+extern const PORTx_PCRn PORTD_PCR12;
+extern const PORTx_PCRn PORTD_PCR13;
+extern const PORTx_PCRn PORTD_PCR14;
+extern const PORTx_PCRn PORTD_PCR15;
+extern const PORTx_PCRn PORTD_PCR16;
+extern const PORTx_PCRn PORTD_PCR17;
+extern const PORTx_PCRn PORTD_PCR18;
+extern const PORTx_PCRn PORTD_PCR19;
+extern const PORTx_PCRn PORTD_PCR20;
+extern const PORTx_PCRn PORTD_PCR21;
+extern const PORTx_PCRn PORTD_PCR22;
+extern const PORTx_PCRn PORTD_PCR23;
+extern const PORTx_PCRn PORTD_PCR24;
+extern const PORTx_PCRn PORTD_PCR25;
+extern const PORTx_PCRn PORTD_PCR26;
+extern const PORTx_PCRn PORTD_PCR27;
+extern const PORTx_PCRn PORTD_PCR28;
+extern const PORTx_PCRn PORTD_PCR29;
+extern const PORTx_PCRn PORTD_PCR30;
+extern const PORTx_PCRn PORTD_PCR31;
+extern const PORTx_GPCLR PORTD_GPCLR;
+extern const PORTx_GPCHR PORTD_GPCHR;
+extern const PORTx_ISFR PORTD_ISFR;
+extern const PORTx_DFER PORTD_DFER;
+extern const PORTx_DFCR PORTD_DFCR;
+extern const PORTx_DFWR PORTD_DFWR;
 
-REGISTER(PORTx_PCRn,  PORTE_PCR0,  0x4004'D000);
-REGISTER(PORTx_PCRn,  PORTE_PCR1,  0x4004'D004);
-REGISTER(PORTx_PCRn,  PORTE_PCR2,  0x4004'D008);
-REGISTER(PORTx_PCRn,  PORTE_PCR3,  0x4004'D00C);
-REGISTER(PORTx_PCRn,  PORTE_PCR4,  0x4004'D010);
-REGISTER(PORTx_PCRn,  PORTE_PCR5,  0x4004'D014);
-REGISTER(PORTx_PCRn,  PORTE_PCR6,  0x4004'D018);
-REGISTER(PORTx_PCRn,  PORTE_PCR7,  0x4004'D01C);
-REGISTER(PORTx_PCRn,  PORTE_PCR8,  0x4004'D020);
-REGISTER(PORTx_PCRn,  PORTE_PCR9,  0x4004'D024);
-REGISTER(PORTx_PCRn,  PORTE_PCR10, 0x4004'D028);
-REGISTER(PORTx_PCRn,  PORTE_PCR11, 0x4004'D02C);
-REGISTER(PORTx_PCRn,  PORTE_PCR12, 0x4004'D030);
-REGISTER(PORTx_PCRn,  PORTE_PCR13, 0x4004'D034);
-REGISTER(PORTx_PCRn,  PORTE_PCR14, 0x4004'D038);
-REGISTER(PORTx_PCRn,  PORTE_PCR15, 0x4004'D03C);
-REGISTER(PORTx_PCRn,  PORTE_PCR16, 0x4004'D040);
-REGISTER(PORTx_PCRn,  PORTE_PCR17, 0x4004'D044);
-REGISTER(PORTx_PCRn,  PORTE_PCR18, 0x4004'D048);
-REGISTER(PORTx_PCRn,  PORTE_PCR19, 0x4004'D04C);
-REGISTER(PORTx_PCRn,  PORTE_PCR20, 0x4004'D050);
-REGISTER(PORTx_PCRn,  PORTE_PCR21, 0x4004'D054);
-REGISTER(PORTx_PCRn,  PORTE_PCR22, 0x4004'D058);
-REGISTER(PORTx_PCRn,  PORTE_PCR23, 0x4004'D05C);
-REGISTER(PORTx_PCRn,  PORTE_PCR24, 0x4004'D060);
-REGISTER(PORTx_PCRn,  PORTE_PCR25, 0x4004'D064);
-REGISTER(PORTx_PCRn,  PORTE_PCR26, 0x4004'D068);
-REGISTER(PORTx_PCRn,  PORTE_PCR27, 0x4004'D06C);
-REGISTER(PORTx_PCRn,  PORTE_PCR28, 0x4004'D070);
-REGISTER(PORTx_PCRn,  PORTE_PCR29, 0x4004'D074);
-REGISTER(PORTx_PCRn,  PORTE_PCR30, 0x4004'D078);
-REGISTER(PORTx_PCRn,  PORTE_PCR31, 0x4004'D07C);
-REGISTER(PORTx_GPCLR, PORTE_GPCLR, 0x4004'D080);
-REGISTER(PORTx_GPCHR, PORTE_GPCHR, 0x4004'D084);
-REGISTER(PORTx_ISFR,  PORTE_ISFR,  0x4004'D0A0);
-REGISTER(PORTx_DFER,  PORTE_DFER,  0x4004'D0C0);
-REGISTER(PORTx_DFCR,  PORTE_DFCR,  0x4004'D0C4);
-REGISTER(PORTx_DFWR,  PORTE_DFWR,  0x4004'D0C8);
+extern const PORTx_PCRn PORTE_PCR0;
+extern const PORTx_PCRn PORTE_PCR1;
+extern const PORTx_PCRn PORTE_PCR2;
+extern const PORTx_PCRn PORTE_PCR3;
+extern const PORTx_PCRn PORTE_PCR4;
+extern const PORTx_PCRn PORTE_PCR5;
+extern const PORTx_PCRn PORTE_PCR6;
+extern const PORTx_PCRn PORTE_PCR7;
+extern const PORTx_PCRn PORTE_PCR8;
+extern const PORTx_PCRn PORTE_PCR9;
+extern const PORTx_PCRn PORTE_PCR10;
+extern const PORTx_PCRn PORTE_PCR11;
+extern const PORTx_PCRn PORTE_PCR12;
+extern const PORTx_PCRn PORTE_PCR13;
+extern const PORTx_PCRn PORTE_PCR14;
+extern const PORTx_PCRn PORTE_PCR15;
+extern const PORTx_PCRn PORTE_PCR16;
+extern const PORTx_PCRn PORTE_PCR17;
+extern const PORTx_PCRn PORTE_PCR18;
+extern const PORTx_PCRn PORTE_PCR19;
+extern const PORTx_PCRn PORTE_PCR20;
+extern const PORTx_PCRn PORTE_PCR21;
+extern const PORTx_PCRn PORTE_PCR22;
+extern const PORTx_PCRn PORTE_PCR23;
+extern const PORTx_PCRn PORTE_PCR24;
+extern const PORTx_PCRn PORTE_PCR25;
+extern const PORTx_PCRn PORTE_PCR26;
+extern const PORTx_PCRn PORTE_PCR27;
+extern const PORTx_PCRn PORTE_PCR28;
+extern const PORTx_PCRn PORTE_PCR29;
+extern const PORTx_PCRn PORTE_PCR30;
+extern const PORTx_PCRn PORTE_PCR31;
+extern const PORTx_GPCLR PORTE_GPCLR;
+extern const PORTx_GPCHR PORTE_GPCHR;
+extern const PORTx_ISFR PORTE_ISFR;
+extern const PORTx_DFER PORTE_DFER;
+extern const PORTx_DFCR PORTE_DFCR;
+extern const PORTx_DFWR PORTE_DFWR;
 
-} // namespace platform
-
-#undef REGISTER
+} // namespace platform::port

@@ -1,6 +1,6 @@
 #pragma once
-#include <initializer_list>
 #include <cstdint>
+#include <limits>
 
 namespace util {
 
@@ -24,9 +24,10 @@ class Bitmask
 {
 public:
     template <typename... Args>
-    constexpr Bitmask(Args... args) : mask{make_mask(args...)} {}
+    constexpr Bitmask(const Args... args) : mask{make_mask(args...)} {}
 
     const T mask;
+private:
 };
 
 } // namespace util

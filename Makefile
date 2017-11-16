@@ -12,7 +12,7 @@ CC        := arm-none-eabi-gcc $(CPU) -c
 CXX       := arm-none-eabi-g++ $(CPU) -c
 CFLAGS    := -I.
 CFLAGS    += -flto
-CXXFLAGS  := -fno-rtti -fno-exceptions -std=c++17
+CXXFLAGS  := -fno-rtti -fno-exceptions -std=c++17 -I ../boost/boost_1_65_1
 
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM

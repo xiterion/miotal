@@ -25,9 +25,6 @@ public:
     typename std::enable_if_t<std::is_integral<Number>::value>
     write(Number value) const { reg() = value; }
 
-private:
-    volatile T& reg() const { return *reinterpret_cast<volatile T*>(address); }
-
     template <typename... Args>
     static constexpr T mask(Args... args);
 
@@ -45,6 +42,9 @@ private:
 
     template <typename Last>
     static constexpr T value(Last last) { return last.value << last.shift; }
+
+private:
+    volatile T& reg() const { return *reinterpret_cast<volatile T*>(address); }
 };
 
 template <typename T, typename Reg, std::size_t offset, std::size_t width=1>
