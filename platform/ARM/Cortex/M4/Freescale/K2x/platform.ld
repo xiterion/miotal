@@ -1,9 +1,9 @@
 OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
-ENTRY(start)
+ENTRY(_start)
 
 MEMORY {
-	ROM (rx)  : ORIGIN = 0x00000000, LENGTH = 1024k
+	ROM (rx)  : ORIGIN = 0x00000000, LENGTH = 512k
 	RAM (rwx) : ORIGIN = 0x1FFF0000, LENGTH = 128k
 }
 
@@ -14,32 +14,29 @@ SVC_STACK_SIZE = 0;
 ABT_STACK_SIZE = 0;
 UND_STACK_SIZE = 0;
 
-SECTIONS {
-	.reset : {
-		*(.Interrupt_vector*);
-		. = ALIGN (4);
-	} >ROM
+HEAP_SIZE = 1000;
 
+SECTIONS {
 	.text : {
-		CREATE_OBJECT_SYMBOLS
+		KEEP (*(.isr_vector))
+		. = ALIGN (4);
 		*(.text .text.* .gnu.linkonce.t.*)
 		*(.plt)
 		*(.gnu.warning)
 		. = ALIGN (4);
 
-		KEEP (*.crtbegin.o(ctors))
-		KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))
-		KEEP (*(SORT(.ctors.*)))
-		KEEP (*.crtend.o(.ctors))
-		KEEP (*.crtbegin.o(.dtors))
-		KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
-		KEEP (*(SORT(.dtors.*)))
-		KEEP (*crtend.o(.dtors))
-
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
-
-		*(.init)
-		*(.fini)
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP (*(.preinit_array))
+        PROVIDE_HIDDEN (__preinit_array_end = .);
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP (*(SORT(.init_array.*)))
+        KEEP (*(.init_array))
+        PROVIDE_HIDDEN (__init_array_end = .);
+        PROVIDE_HIDDEN (__fini_array_start = .);
+        KEEP (*(SORT(.fini_array.*)))
+        KEEP (*(.fini_array))
+        PROVIDE_HIDDEN (__fini_array_end = .);
 	} >ROM
 
 	.ARM.exidx : {
@@ -57,22 +54,29 @@ SECTIONS {
 		*(.shdata)
 		*(.data .data.* .gnu.linkonce.d.*)
 		. = ALIGN (4);
-		_edata = .;
+        _edata = .;
+        _edata_load = LOADADDR (.data) + SIZEOF (.data);
 	} >RAM AT>ROM
 
 	.bss : {
-		__bss_start__ = .;
+		__bss_start = .;
 		*(.shbss)
 		*(.bss .bss.* .gnu.linkonce.b.*)
 		*(COMMON)
 		. = ALIGN (4);
-		__bss_end__ = .;
+		__bss_end = .;
 	} >RAM
 
-	.stack : {
-		total_stack_size = C_STACK_SIZE;
-		__stack_start__ = ORIGIN(RAM) + LENGTH(RAM) - total_stack_size;
-		. = __stack_start__;
+    .heap : {
+        . = ALIGN (4);
+        __heap_start = .;
+        . += HEAP_SIZE;
+        . = ALIGN (4);
+        __heap_end = .;
+    } >RAM
+
+
+	.stack (ORIGIN(RAM) + LENGTH(RAM) - C_STACK_SIZE): {
 /*
 		. += IRQ_STACK_SIZE;
 		. = ALIGN(4);

@@ -6,27 +6,32 @@ default: debug
 V         := @
 
 NAME      := test
-CPU       += -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+CPU       += -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb
 PLATFORM  := platform/ARM/Cortex/M4/Freescale/K2x
+AS        := arm-none-eabi-as $(CPU)
 CC        := arm-none-eabi-gcc $(CPU) -c
 CXX       := arm-none-eabi-g++ $(CPU) -c
-CFLAGS    := -I.
+OBJCOPY   := arm-none-eabi-objcopy
+ASFLAGS   := 
+CFLAGS    := -I. -ffreestanding
 CFLAGS    += -flto
-CXXFLAGS  := -fno-rtti -fno-exceptions -std=c++17 -I ../boost/boost_1_65_1
+CXXFLAGS  := -std=c++17 -I ../boost/boost_1_65_1 -fno-rtti
 
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc $(CPU) --specs=nano.specs -nostartfiles
-LDFLAGS   := -flto -T $(PLATFORM)/platform.ld
+LD        := arm-none-eabi-gcc $(CPU) --specs=nosys.specs
+LDFLAGS   := -flto -T $(PLATFORM)/platform.ld -nostartfiles
+LDLIBS    := -lstdc++
 
 SIZE      := arm-none-eabi-size
 
 rwildcard = $(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d)))
 
+ASOURCES              := $(call rwildcard,./,*.s)
 CSOURCES              := $(call rwildcard,./,*.c)
 CXXSOURCES            := $(call rwildcard,./,*.cpp)
-OBJECTS               := $(CSOURCES:%.c=%.o) $(CXXSOURCES:%.cpp=%.o)
+OBJECTS               := $(ASOURCES:%.s=%.o) $(CSOURCES:%.c=%.o) $(CXXSOURCES:%.cpp=%.o)
 DEPENDENCY_FILES      := $(OBJECTS:%.o=%.d)
 OBJECT_BUILD_TREE     := $(sort $(filter-out ./,$(dir $(OBJECTS))))
 
@@ -36,7 +41,7 @@ test: $(NAME).elf
 
 .PHONY: debug
 debug: CFLAGS += -g -O1
-debug: $(NAME).elf
+debug: $(NAME).elf $(NAME).bin
 
 .PHONY: release
 release: CFLAGS += -O3
@@ -50,11 +55,16 @@ list: debug
 nm: debug
 	arm-none-eabi-gcc-nm -n $(NAME).elf
 
-
 $(NAME).elf: $(OBJECTS)
 	@echo LD $@
 	$V $(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 	$V $(SIZE) $@
+
+$(NAME).bin: $(NAME).elf
+	@echo OBJCOPY $@
+	$V $(OBJCOPY) -O binary $< $@
+
+startup.o: CFLAGS += -fno-exceptions
 
 %.o: %.cpp %.d
 	@echo CXX $@
@@ -63,6 +73,10 @@ $(NAME).elf: $(OBJECTS)
 %.o: %.c %.d
 	@echo CC $@
 	$V $(CC) $< -o $@ $(CFLAGS)
+
+%.o: %.s
+	@echo AS $@
+	$V $(AS) $< -o $@ $(ASFLAGS)
 
 %.d: %.c
 	@echo CDEPEND $@
@@ -86,9 +100,10 @@ $(NAME).elf: $(OBJECTS)
 	    ;;                                                                             \
 	esac
 
+
 -include $(DEPENDENCY_FILES)
 
-$(OBJECTS) $(DEPENDENCY_FILES): Makefile
+$(OBJECTS) $(DEPENDENCY_FILES): Makefile $(PLATFORM)/platform.ld
 
 .PHONY: clean
 clean:
