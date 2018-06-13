@@ -15,14 +15,14 @@ OBJCOPY   := arm-none-eabi-objcopy
 ASFLAGS   := 
 CFLAGS    := -I. -ffreestanding
 CFLAGS    += -flto
-CXXFLAGS  := -std=c++17 -I ../boost/boost_1_65_1 -fno-rtti
+CXXFLAGS  := -std=c++17 -I ../boost/boost_1_65_1 -fno-rtti -fno-exceptions -fno-unwind-tables
 
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc $(CPU) --specs=nosys.specs
+LD        := arm-none-eabi-gcc $(CPU) --specs=nano.specs --specs=nosys.specs
 LDFLAGS   := -flto -T $(PLATFORM)/platform.ld -nostartfiles
-LDLIBS    := -lstdc++
+LDLIBS    := #-lstdc++
 
 SIZE      := arm-none-eabi-size
 
