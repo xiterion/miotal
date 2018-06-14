@@ -1,16 +1,17 @@
 #include <cstdint>
 
 #include <hal/pin.hpp>
+#include <platform/ARM/Cortex/M4/Freescale/K2x/gpio.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/K2x/platform.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/K2x/sim.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/K2x/wdog.hpp>
 
-#define RED_ON  *reinterpret_cast<volatile uint32_t*>(0x400F'F008) = (1 << 1)
-#define RED_OFF *reinterpret_cast<volatile uint32_t*>(0x400F'F004) = (1 << 1)
-#define GREEN_ON  *reinterpret_cast<volatile uint32_t*>(0x400F'F008) = (1 << 2)
-#define GREEN_OFF *reinterpret_cast<volatile uint32_t*>(0x400F'F004) = (1 << 2)
-#define BLUE_ON  *reinterpret_cast<volatile uint32_t*>(0x400F'F0C8) = (1 << 5)
-#define BLUE_OFF *reinterpret_cast<volatile uint32_t*>(0x400F'F0C4) = (1 << 5)
+#define RED_ON    platform::gpio::GPIOA_PCOR.clear(1)
+#define RED_OFF   platform::gpio::GPIOA_PSOR.set(1)
+#define GREEN_ON  platform::gpio::GPIOA_PCOR.clear(2)
+#define GREEN_OFF platform::gpio::GPIOA_PSOR.set(2)
+#define BLUE_ON   platform::gpio::GPIOD_PCOR.clear(5)
+#define BLUE_OFF  platform::gpio::GPIOD_PSOR.set(5)
 
 extern "C" void low_level_init() {
     using namespace platform::wdog;
@@ -28,13 +29,13 @@ extern "C" void low_level_init() {
     PORTA_PCR1.MUX(PORTA_PCR1.alternative_1_GPIO);
     PORTA_PCR2.MUX(PORTA_PCR2.alternative_1_GPIO);
     PORTD_PCR5.MUX(PORTD_PCR5.alternative_1_GPIO);
-    // PDOR
-    *reinterpret_cast<volatile uint32_t*>(0x400F'F014) = (1 << 1) | (1 << 2);
-    *reinterpret_cast<volatile uint32_t*>(0x400F'F0D4) = (1 << 5);
 
-    // PSOR
-    *reinterpret_cast<volatile uint32_t*>(0x400F'F004) = (1 << 1) | (1 << 2);
-    *reinterpret_cast<volatile uint32_t*>(0x400F'F0C4) = (1 << 5);
+    using namespace platform::gpio;
+    GPIOA_PDDR.set_output(1,2);
+    GPIOD_PDDR.set_output(5);
+
+    GPIOA_PSOR.set(1,2);
+    GPIOD_PSOR.set(5);
 }
 
 struct Foo {
