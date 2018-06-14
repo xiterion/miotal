@@ -12,6 +12,11 @@ using Register = generic::Generic_Register<std::uint32_t, Derived>;
 template <typename reg, std::size_t offset, std::size_t width=1>
 using Bitfield = generic::Generic_Bitfield<std::uint32_t, reg, offset, width>;
 
+template <typename Derived>
+using Register_16 = generic::Generic_Register<std::uint16_t, Derived>;
+template <typename reg, std::size_t offset, std::size_t width=1>
+using Bitfield_16 = generic::Generic_Bitfield<std::uint16_t, reg, offset, width>;
+
 namespace generic {
 
 // Partial specialization of Bitfield to support bit banding
@@ -29,7 +34,8 @@ struct Generic_Bitfield<T, Reg, offset, 1> {
 
     inline static constexpr std::uintptr_t bitband_address(const Reg& instance);
     static Generic_Bitfield read(const Reg& instance) {
-        return {Generic_Register<std::uint32_t, Reg>{bitband_address(instance)}.read()};
+        return {static_cast<T>(
+                Generic_Register<std::uint32_t, Reg>{bitband_address(instance)}.read())};
     }
     static void write(const Reg& instance, Generic_Bitfield val) {
         Generic_Register<std::uint32_t, Reg>{bitband_address(instance)}.write(val.value);

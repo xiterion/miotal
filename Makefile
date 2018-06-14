@@ -49,7 +49,7 @@ release: $(NAME).elf
 
 .PHONY: list
 list: debug
-	arm-none-eabi-objdump -C -S $(NAME).elf
+	arm-none-eabi-objdump -C -S $(NAME).elf | less
 
 .PHONY: nm
 nm: debug

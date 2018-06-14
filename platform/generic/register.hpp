@@ -65,5 +65,11 @@ struct Generic_Bitfield {
     }
 };
 
+template <typename T, typename Reg, std::size_t offset, std::size_t width>
+constexpr
+Generic_Bitfield<T, Reg, offset, width> operator~(const Generic_Bitfield<T, Reg, offset, width>& a) {
+    return Generic_Bitfield<T, Reg, offset, width>{~a.value & (a.mask >> a.shift)};
+}
+
 } // namespace generic
 } // namespace platform

@@ -1,4 +1,6 @@
 #pragma once
+
+#include <util/bit_manipulation.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/register.hpp>
 
 namespace platform::sim {
@@ -36,6 +38,17 @@ struct SIM_SOPT2_t : public Register<SIM_SOPT2_t> {
 
 struct SIM_SOPT4_t : public Register<SIM_SOPT4_t> {
     using Register<SIM_SOPT4_t>::Register;
+
+    using FlexTimer_3_hardware_trigger_1_source = Bitfield<SIM_SOPT4_t, 31>;
+    using FlexTimer_3_hardware_trigger_0_source = Bitfield<SIM_SOPT4_t, 30>;
+    using FlexTimer_0_hardware_trigger_1_source = Bitfield<SIM_SOPT4_t, 29>;
+    using FlexTimer_0_hardware_trigger_0_source = Bitfield<SIM_SOPT4_t, 28>;
+    using FlexTimer_3_external_clock_pin = Bitfield<SIM_SOPT4_t, 27>;
+    using FlexTimer_2_external_clock_pin = Bitfield<SIM_SOPT4_t, 26>;
+    using FlexTimer_1_external_clock_pin = Bitfield<SIM_SOPT4_t, 25>;
+    using FlexTimer_0_external_clock_pin = Bitfield<SIM_SOPT4_t, 24>;
+    using FlexTimer_2_chanel_1_input_capture_source = Bitfield<SIM_SOPT4_t, 22>;
+    // TODO: Finish this
 };
 
 struct SIM_SOPT5_t : public Register<SIM_SOPT5_t> {
@@ -68,6 +81,25 @@ struct SIM_SCGC4_t : public Register<SIM_SCGC4_t> {
 
 struct SIM_SCGC5_t : public Register<SIM_SCGC5_t> {
     using Register<SIM_SCGC5_t>::Register;
+
+    template <typename... Args>
+    void enable_clock(const Args... args) const {
+        write(args...);
+    }
+
+    template <typename... Args>
+    void disable_clock(const Args... args) const {
+        write(~args...);
+    }
+
+    template <std::size_t offset>
+    using Clock_gate = Bitfield<SIM_SCGC5_t, offset>;
+
+    static constexpr Clock_gate<9>  PORTA {true};
+    static constexpr Clock_gate<10> PORTB {true};
+    static constexpr Clock_gate<11> PORTC {true};
+    static constexpr Clock_gate<12> PORTD {true};
+    static constexpr Clock_gate<13> PORTE {true};
 };
 
 struct SIM_SCGC6_t : public Register<SIM_SCGC6_t> {

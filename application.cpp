@@ -2,6 +2,8 @@
 
 #include <hal/pin.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/K2x/platform.hpp>
+#include <platform/ARM/Cortex/M4/Freescale/K2x/sim.hpp>
+#include <platform/ARM/Cortex/M4/Freescale/K2x/wdog.hpp>
 
 #define RED_ON  *reinterpret_cast<volatile uint32_t*>(0x400F'F008) = (1 << 1)
 #define RED_OFF *reinterpret_cast<volatile uint32_t*>(0x400F'F004) = (1 << 1)
@@ -11,13 +13,16 @@
 #define BLUE_OFF *reinterpret_cast<volatile uint32_t*>(0x400F'F0C4) = (1 << 5)
 
 extern "C" void low_level_init() {
-    *reinterpret_cast<volatile std::uint16_t*>(0x4005'200E) = 0xC520;
-    *reinterpret_cast<volatile std::uint16_t*>(0x4005'200E) = 0xD928;
-    asm("nop");
-    *reinterpret_cast<volatile std::uint16_t*>(0x4005'2000) = 0b0000'0001'0000'0000;
+    using namespace platform::wdog;
+    WDOG_UNLOCK.unlock();
+    WDOG_STCTRLH.write(WDOG_STCTRLH.disable_watchdog);
 
-    *reinterpret_cast<volatile std::uint32_t*>(0x4004'8038) = 
-        0b0000'0000'0000'0100'0011'1111'1000'0010;
+    using namespace platform::sim;
+    SIM_SCGC5.enable_clock(SIM_SCGC5.PORTA,
+                           SIM_SCGC5.PORTB,
+                           SIM_SCGC5.PORTC,
+                           SIM_SCGC5.PORTD,
+                           SIM_SCGC5.PORTE);
 
     using namespace platform::port;
     PORTA_PCR1.MUX(PORTA_PCR1.alternative_1_GPIO);
