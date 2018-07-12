@@ -1,5 +1,6 @@
 #pragma once
-#include <initializer_list>
+
+#include <boost/preprocessor/repetition/repeat.hpp>
 
 #include <util/bit_manipulation.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/register.hpp>
@@ -15,6 +16,10 @@ struct GPIOx_PSOR_t : public Register<GPIOx_PSOR_t> {
 
     template <typename... Pins>
     void set(const Pins... pins) const { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+
+#define PIN_DEF(z, n, data) void set_pin_ ## n() const { Bitfield<GPIOx_PSOR_t, n>::write(*this, 1); }
+    BOOST_PP_REPEAT(32, PIN_DEF, _)
+#undef PIN_DEF
 };
 
 struct GPIOx_PCOR_t : public Register<GPIOx_PCOR_t> {
@@ -22,6 +27,10 @@ struct GPIOx_PCOR_t : public Register<GPIOx_PCOR_t> {
 
     template <typename... Pins>
     void clear(const Pins... pins) const { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+
+#define PIN_DEF(z, n, data) void clear_pin_ ## n() const { Bitfield<GPIOx_PCOR_t, n>::write(*this, 1); }
+    BOOST_PP_REPEAT(32, PIN_DEF, _)
+#undef PIN_DEF
 };
 
 struct GPIOx_PTOR_t : public Register<GPIOx_PTOR_t> {
@@ -29,10 +38,17 @@ struct GPIOx_PTOR_t : public Register<GPIOx_PTOR_t> {
 
     template <typename... Pins>
     void toggle(const Pins... pins) const { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+
+#define PIN_DEF(z, n, data) void toggle_pin_ ## n() const { Bitfield<GPIOx_PTOR_t, n>::write(*this, 1); }
+    BOOST_PP_REPEAT(32, PIN_DEF, _)
+#undef PIN_DEF
 };
 
 struct GPIOx_PDIR_t : public Register<GPIOx_PDIR_t> {
     using Register<GPIOx_PDIR_t>::Register;
+
+    template <typename... Pins>
+    bool read(const Pins... pins) const { read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
 struct GPIOx_PDDR_t : public Register<GPIOx_PDDR_t> {
@@ -43,6 +59,21 @@ struct GPIOx_PDDR_t : public Register<GPIOx_PDDR_t> {
     template <typename... Pins>
     void set_input(const Pins... pins) const { write(~util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
+
+struct GPIOx_t {
+    const GPIOx_PDOR_t pdor;
+    const GPIOx_PSOR_t psor;
+    const GPIOx_PCOR_t pcor;
+    const GPIOx_PTOR_t ptor;
+    const GPIOx_PDIR_t pdir;
+    const GPIOx_PDDR_t pddr;
+};
+
+extern const GPIOx_t GPIOA;
+extern const GPIOx_t GPIOB;
+extern const GPIOx_t GPIOC;
+extern const GPIOx_t GPIOD;
+extern const GPIOx_t GPIOE;
 
 extern const GPIOx_PDOR_t GPIOA_PDOR;
 extern const GPIOx_PSOR_t GPIOA_PSOR;

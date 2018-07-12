@@ -45,7 +45,7 @@ debug: $(NAME).elf $(NAME).bin
 
 .PHONY: release
 release: CFLAGS += -O3
-release: $(NAME).elf
+release: $(NAME).elf $(NAME).bin
 
 .PHONY: list
 list: debug

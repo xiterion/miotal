@@ -2,13 +2,11 @@
 
 namespace hal {
 
+template <typename impl>
 class GPIO {
 public:
-    virtual bool read() = 0;
-    virtual void write() = 0;
-    virtual bool toggle() = 0;
-protected:
-    virtual ~GPIO() = default;
+    bool read() const { return static_cast<const impl*>(this)->_read(); }
+    void write(bool val) const { static_cast<const impl*>(this)-> write(val); }
 };
 
 } // namespace hal

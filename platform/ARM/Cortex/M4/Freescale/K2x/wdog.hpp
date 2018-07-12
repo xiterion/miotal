@@ -5,12 +5,14 @@
 
 namespace platform::wdog {
 
+// Omit bitbanding fields for these registers.  The reset
+// logic in the wdog module requires writes to the actual
+// register.
+
 struct WDOG_STCTRLH_t : public Register_16<WDOG_STCTRLH_t> {
     using Register_16<WDOG_STCTRLH_t>::Register_16;
 
     using Enable_Watchdog = Bitfield_16<WDOG_STCTRLH_t, 0>;
-    auto WDOGEN() const { return Enable_Watchdog::read(*this); }
-    auto WDOGEN(Enable_Watchdog val) const { Enable_Watchdog::write(*this, val); }
     static constexpr Enable_Watchdog enable_watchdog {true};
     static constexpr Enable_Watchdog disable_watchdog {false};
 };

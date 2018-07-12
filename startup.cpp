@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <cstring>
 
+#include <platform/ARM/Cortex/M4/Freescale/K2x/wdog.hpp>
+
 extern "C" {
 
 extern void low_level_init();
@@ -80,7 +82,7 @@ extern void FTM3_handler();
 extern void DAC1_handler();
 extern void ADC1_handler();
 
-__attribute__((used)) [[noreturn]] void _exit(int) { while (1); }
+[[noreturn]] void _exit(int) { while (1); }
 
 extern uintptr_t __bss_start;
 extern uintptr_t __bss_end;
@@ -99,7 +101,7 @@ extern void (*__init_array_end []) ();
 extern void (*__fini_array_start []) ();
 extern void (*__fini_array_end []) ();
 
-void _start()
+[[noreturn]] void _start()
 {
     // First, call the user defined initialization.  This can't really
     // go in the GCC defined init section because the compiler sets
@@ -120,7 +122,11 @@ void _start()
     _exit(ret);
 }
 
-__attribute__((weak)) void low_level_init() {}
+__attribute__((weak)) void low_level_init() {
+    using namespace platform::wdog;
+    WDOG_UNLOCK.unlock();
+    WDOG_STCTRLH.write(WDOG_STCTRLH.disable_watchdog);
+}
 
 namespace { __attribute__((alias("_exit"))) void Dummy_handler(); }
 __attribute__((weak, alias("_exit"))) void NMI_handler();
