@@ -42,15 +42,19 @@ struct Generic_Bitfield<T, Reg, offset, 1> {
     }
 };
 
-template <typename T, typename Reg, std::size_t offset>
-constexpr std::uintptr_t Generic_Bitfield<T, Reg, offset, 1>::bitband_address(const Reg& instance) {
-    if((0x2000'0000 <= instance.address) and (instance.address < 0x2010'0000)) {
-        return 0x2200'0000 + (((instance.address - 0x2000'0000) * 32) + (offset * 4));
+inline constexpr std::uintptr_t get_bitband_address(const std::uintptr_t address, const std::size_t offset) {
+    if((0x2000'0000 <= address) and (address < 0x2010'0000)) {
+        return 0x2200'0000 + (((address - 0x2000'0000) * 32) + (offset * 4));
     }
-    if((0x4000'0000 <= instance.address) and (instance.address < 0x4010'0000)) {
-        return 0x4200'0000 + (((instance.address - 0x4000'0000) * 32) + (offset * 4));
+    if((0x4000'0000 <= address) and (address < 0x4010'0000)) {
+        return 0x4200'0000 + (((address - 0x4000'0000) * 32) + (offset * 4));
     }
     return 0;
+}
+
+template <typename T, typename Reg, std::size_t offset>
+constexpr std::uintptr_t Generic_Bitfield<T, Reg, offset, 1>::bitband_address(const Reg& instance) {
+    return get_bitband_address(instance.address, offset);
 }
 
 } // namespace generic

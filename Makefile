@@ -13,16 +13,21 @@ CC        := arm-none-eabi-gcc $(CPU) -c
 CXX       := arm-none-eabi-g++ $(CPU) -c
 OBJCOPY   := arm-none-eabi-objcopy
 ASFLAGS   := 
-CFLAGS    := -I. -ffreestanding
+CFLAGS    := -I.
+CFLAGS    += -ffreestanding
 CFLAGS    += -flto
-CXXFLAGS  := -std=c++17 -I ../boost/boost_1_65_1 -fno-rtti -fno-exceptions -fno-unwind-tables
+CFLAGS    += -ffunction-sections
+CXXFLAGS  := -std=c++17
+CXXFLAGS  += -I ../boost/boost_1_65_1
+CXXFLAGS  += -fno-rtti -fno-exceptions -fno-unwind-tables
 
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
 CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc $(CPU) --specs=nano.specs --specs=nosys.specs
+LD        := arm-none-eabi-gcc --specs=nano.specs --specs=nosys.specs $(CPU)
 LDFLAGS   := -flto -T $(PLATFORM)/platform.ld -nostartfiles
-LDLIBS    := #-lstdc++
+LDFLAGS   += -Wl,--gc-sections
+LDLIBS    := -lstdc++
 
 SIZE      := arm-none-eabi-size
 
@@ -63,8 +68,6 @@ $(NAME).elf: $(OBJECTS)
 $(NAME).bin: $(NAME).elf
 	@echo OBJCOPY $@
 	$V $(OBJCOPY) -O binary $< $@
-
-startup.o: CFLAGS += -fno-exceptions
 
 %.o: %.cpp %.d
 	@echo CXX $@

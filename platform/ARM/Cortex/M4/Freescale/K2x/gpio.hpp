@@ -1,5 +1,8 @@
 #pragma once
 
+#include <array>
+#include <functional>
+
 #include <boost/preprocessor/repetition/repeat.hpp>
 
 #include <util/bit_manipulation.hpp>
@@ -16,10 +19,12 @@ struct GPIOx_PSOR_t : public Register<GPIOx_PSOR_t> {
 
     template <typename... Pins>
     void set(const Pins... pins) const { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
-
-#define PIN_DEF(z, n, data) void set_pin_ ## n() const { Bitfield<GPIOx_PSOR_t, n>::write(*this, 1); }
-    BOOST_PP_REPEAT(32, PIN_DEF, _)
-#undef PIN_DEF
+/*
+    void set(const int pin) const {
+        std::uintptr_t addr = platform::generic::get_bitband_address(address, pin);
+        Register<GPIOx_PSOR_t>{addr}.write(1);
+    }
+    */
 };
 
 struct GPIOx_PCOR_t : public Register<GPIOx_PCOR_t> {
@@ -27,10 +32,6 @@ struct GPIOx_PCOR_t : public Register<GPIOx_PCOR_t> {
 
     template <typename... Pins>
     void clear(const Pins... pins) const { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
-
-#define PIN_DEF(z, n, data) void clear_pin_ ## n() const { Bitfield<GPIOx_PCOR_t, n>::write(*this, 1); }
-    BOOST_PP_REPEAT(32, PIN_DEF, _)
-#undef PIN_DEF
 };
 
 struct GPIOx_PTOR_t : public Register<GPIOx_PTOR_t> {
@@ -38,10 +39,6 @@ struct GPIOx_PTOR_t : public Register<GPIOx_PTOR_t> {
 
     template <typename... Pins>
     void toggle(const Pins... pins) const { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
-
-#define PIN_DEF(z, n, data) void toggle_pin_ ## n() const { Bitfield<GPIOx_PTOR_t, n>::write(*this, 1); }
-    BOOST_PP_REPEAT(32, PIN_DEF, _)
-#undef PIN_DEF
 };
 
 struct GPIOx_PDIR_t : public Register<GPIOx_PDIR_t> {
@@ -55,9 +52,11 @@ struct GPIOx_PDDR_t : public Register<GPIOx_PDDR_t> {
     using Register<GPIOx_PDDR_t>::Register;
 
     template <typename... Pins>
-    void set_output(const Pins... pins) const { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+    void set_output(const Pins... pins) const {
+        write(read() | util::Bitmask<std::uint32_t>{pins...}.mask); }
     template <typename... Pins>
-    void set_input(const Pins... pins) const { write(~util::Bitmask<std::uint32_t>{pins...}.mask); }
+    void set_input(const Pins... pins) const {
+        write(read() & ~util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 
 struct GPIOx_t {

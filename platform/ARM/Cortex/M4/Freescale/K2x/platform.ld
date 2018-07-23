@@ -59,12 +59,12 @@ SECTIONS {
 	} >RAM AT>ROM
 
 	.bss : {
-		__bss_start = .;
+		__bss_start__ = .;
 		*(.shbss)
 		*(.bss .bss.* .gnu.linkonce.b.*)
 		*(COMMON)
 		. = ALIGN (4);
-		__bss_end = .;
+		__bss_end__ = .;
 	} >RAM
 
     .heap : {

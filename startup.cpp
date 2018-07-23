@@ -84,8 +84,8 @@ extern void ADC1_handler();
 
 [[noreturn]] void _exit(int) { while (1); }
 
-extern uintptr_t __bss_start;
-extern uintptr_t __bss_end;
+extern uintptr_t __bss_start__;
+extern uintptr_t __bss_end__;
 
 extern uintptr_t __data_load;
 extern uintptr_t _edata_load;
@@ -112,7 +112,7 @@ extern void (*__fini_array_end []) ();
     // hardware prior to any potentially heavy-weight startup actions.
     low_level_init();
 
-    std::fill(&__bss_start, &__bss_end, 0);
+    std::fill(&__bss_start__, &__bss_end__, 0);
     std::copy(&__data_load, &_edata_load, &__data_start);
     std::fill(&__heap_start, &__heap_end, 0x55555555);
     std::for_each(__preinit_array_start, __preinit_array_end, [](auto& f){ f(); });
