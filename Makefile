@@ -18,7 +18,6 @@ CFLAGS    += -ffreestanding
 CFLAGS    += -flto
 CFLAGS    += -ffunction-sections
 CXXFLAGS  := -std=c++17
-CXXFLAGS  += -I ../boost/boost_1_65_1
 CXXFLAGS  += -fno-rtti -fno-exceptions -fno-unwind-tables
 
 CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM

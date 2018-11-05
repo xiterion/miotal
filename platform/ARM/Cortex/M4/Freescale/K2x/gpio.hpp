@@ -3,8 +3,6 @@
 #include <array>
 #include <functional>
 
-#include <boost/preprocessor/repetition/repeat.hpp>
-
 #include <util/bit_manipulation.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/register.hpp>
 
