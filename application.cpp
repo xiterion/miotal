@@ -20,39 +20,13 @@ extern "C" void low_level_init() {
                            SIM_SCGC5.PORTE);
 }
 
-template <typename base, template<typename> typename type>
-class crtp {
-public:
-    base& impl() { return static_cast<base&>(*this); }
-    const base& impl() const { return static_cast<const base&>(*this); }
-private:
-    crtp() = default;
-    friend type<base>;
-};
-
-template <typename base>
-class pin_interface : public crtp<base, pin_interface> {
-public:
-    bool read()          const { return this->impl()._read(); }
-    void write(bool val) const { this->impl()._write(val); }
-    void set()           const { this->impl()._set(); }
-    void clear()         const { this->impl()._clear(); }
-    void toggle()        const { this->impl()._toggle(); }
-};
-
 class Pin {
 public:
-    bool read()          const { return _read(); }
-    void write(bool val) const { _write(val); }
-    void set()           const { _set(); }
-    void clear()         const { _clear(); }
-    void toggle()        const { _toggle(); }
-private:
-    virtual bool _read() const = 0;
-    virtual void _write(bool val) const = 0;
-    virtual void _set() const = 0;
-    virtual void _clear() const = 0;
-    virtual void _toggle() const = 0;
+    virtual bool read()          const = 0;
+    virtual void write(bool val) const = 0;
+    virtual void set()           const = 0;
+    virtual void clear()         const = 0;
+    virtual void toggle()        const = 0;
 };
 
 class k22_gpio : public Pin {
@@ -65,21 +39,23 @@ public:
             gpio.pddr.set_output(pin);
         };
 
+    bool read() const final { return gpio.pdir.read(pin); }
+    void write(bool val) const final { gpio.pdor.write(pin); }
+    void set() const final { gpio.psor.set(pin); }
+    void clear() const final { gpio.pcor.clear(pin); }
+    void toggle() const final { gpio.ptor.toggle(pin); }
+
 private:
     const platform::gpio::GPIOx_t& gpio;
     const platform::port::PORTx_PCRn& pcr;
     const int pin;
-
-    bool _read() const final { return gpio.pdir.read(pin); }
-    void _write(bool val) const final { gpio.pdor.write(pin); }
-    void _set() const final { gpio.psor.set(pin); }
-    void _clear() const final { gpio.pcor.clear(pin); }
-    void _toggle() const final { gpio.ptor.toggle(pin); }
 };
+
+typedef k22_gpio Pin2;
 
 class led {
 public:
-    led(const Pin& pin) : pin{pin} {
+    led(const Pin2& pin) : pin{pin} {
         pin.set();
     };
 
@@ -87,7 +63,7 @@ public:
     void off() const { pin.set(); }
 
 private:
-    const Pin& pin;
+    const Pin2& pin;
 };
 
 int main(void)
