@@ -8,9 +8,9 @@
 #include <platform/ARM/Cortex/M4/Freescale/K2x/wdog.hpp>
 
 extern "C" void low_level_init() {
-//    using namespace platform::wdog;
-//    WDOG_UNLOCK.unlock();
-//    WDOG_STCTRLH.write(WDOG_STCTRLH.disable_watchdog);
+    using namespace platform::wdog;
+    WDOG_UNLOCK.unlock();
+    WDOG_STCTRLH.write(WDOG_STCTRLH.disable_watchdog);
 
     using namespace platform::sim;
     SIM_SCGC5.enable_clock(SIM_SCGC5.PORTA,
