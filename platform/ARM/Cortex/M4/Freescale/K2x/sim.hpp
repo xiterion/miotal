@@ -4,7 +4,7 @@
 #include <platform/ARM/Cortex/M4/Freescale/register.hpp>
 
 namespace platform::sim {
-
+#if 0
 struct SIM_SOPT1_t : public Register<SIM_SOPT1_t> {
     using Register<SIM_SOPT1_t>::Register;
 
@@ -164,5 +164,5 @@ extern const SIM_UIDH_t     SIM_UIDH;
 extern const SIM_UIDHM_t    SIM_UIDHM;
 extern const SIM_UIDML_t    SIM_UIDML;
 extern const SIM_UIDL_t     SIM_UIDL;
-
+#endif
 } // namespace platform::sim

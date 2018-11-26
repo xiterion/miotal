@@ -1,75 +1,70 @@
 #pragma once
 
+#include <climits>
 #include <cstdint>
 #include <type_traits>
-#include <util/bit_manipulation.hpp>
 
 namespace platform {
 namespace generic {
 
-template <typename T, typename Derived>
+template <typename R, std::size_t msb, std::size_t lsb=msb>
+struct Bitfield {
+    static_assert(msb < sizeof(typename R::reg_t)*CHAR_BIT, "Bitfield not inside parent type");
+
+    const typename R::reg_t value;
+    static constexpr std::size_t offset = lsb;
+    static constexpr std::size_t width = msb-lsb+1;
+    static constexpr typename R::reg_t mask = ((1u << width) - 1u) << offset;
+
+    constexpr Bitfield(typename R::reg_t raw) : value{raw} {}
+
+    static Bitfield decode(const volatile R* reg) {
+        return Bitfield{static_cast<typename R::reg_t>((reg->read() & mask) >> offset)};
+    }
+    void update(volatile R* reg) { reg->write((reg->read() & ~mask) | (value << offset)); }
+};
+/*
+template <typename R, std::size_t msb, std::size_t lsb>
+constexpr auto operator~(const Bitfield<R, msb, lsb>& a) {
+    return Bitfield<R, msb, lsb>{static_cast<R::reg_t>(~a.value & (a.mask >> a.offset))};
+}
+*/
+template <typename T, typename... Args>
+inline constexpr T mask(Args... args);
+
+template <typename T, typename First, typename... Rest>
+inline constexpr T mask(First first, Rest... rest) { return mask<T>(first) | mask<T>(rest...); }
+
+template <typename T, typename Last>
+inline constexpr T mask(Last last) { return last.mask; }
+
+template <typename T, typename... Args>
+inline constexpr T value(Args... args);
+
+template <typename T, typename First, typename... Rest>
+inline constexpr T value(First first, Rest... rest) { return value<T>(first) | value<T>(rest...); }
+
+template <typename T, typename Last>
+inline constexpr T value(Last last) { return last.value << last.offset; }
+
+template <typename T>
 class Generic_Register {
 public:
-    const std::uintptr_t address;
+    typedef T reg_t;
 
-    constexpr Generic_Register(std::uintptr_t address) : address{address} {}
-
-    T read() const { return reg(); }
+    T read() const volatile { return raw(); }
     
-    template <typename... Args>
-    std::enable_if_t<std::conjunction<
-        std::is_same<typename Args::register_t, Derived>...>::value>
-    write(Args... args) const { write((read() & ~mask(args...)) | value(args...)); }
-
     template <typename Number>
     typename std::enable_if_t<std::is_integral<Number>::value>
-    write(Number value) const { reg() = value; }
+    write(Number value) volatile { raw() = value; }
 
     template <typename... Args>
-    static constexpr T mask(Args... args);
-
-    template <typename First, typename... Rest>
-    static constexpr T mask(First first, Rest... rest) { return mask(first) | mask(rest...); }
-
-    template <typename Last>
-    static constexpr T mask(Last last) { return last.mask; }
-
-    template <typename... Args>
-    static constexpr T value(Args... args);
-
-    template <typename First, typename... Rest>
-    static constexpr T value(First first, Rest... rest) { return value(first) | value(rest...); }
-
-    template <typename Last>
-    static constexpr T value(Last last) { return last.value << last.shift; }
+    void write(Args... args) volatile { write((read() & ~mask<T>(args...)) | value<T>(args...)); }
 
 private:
-    volatile T& reg() const { return *reinterpret_cast<volatile T*>(address); }
+    auto& raw() volatile { return *reinterpret_cast<volatile T*>(this); }
+    auto& raw() const volatile { return *reinterpret_cast<const volatile T*>(this); }
 };
-
-template <typename T, typename Reg, std::size_t offset, std::size_t width=1>
-struct Generic_Bitfield {
-    typedef Reg register_t;
-
-    const T value;
-
-    static constexpr T mask = ((1u << width) - 1u) << offset;
-    static constexpr std::size_t shift = offset;
-
-    constexpr Generic_Bitfield(T raw) : value{raw} {}
-    constexpr Generic_Bitfield(Reg r) : value{(r & mask) >> shift} {}
-
-    static Generic_Bitfield read(const Reg& instance) { return {instance.read()}; }
-    static void write(const Reg& instance, Generic_Bitfield val) {
-        instance.write((instance.read() & ~val.mask) | (val.value << val.shift));
-    }
-};
-
-template <typename T, typename Reg, std::size_t offset, std::size_t width>
-constexpr
-Generic_Bitfield<T, Reg, offset, width> operator~(const Generic_Bitfield<T, Reg, offset, width>& a) {
-    return Generic_Bitfield<T, Reg, offset, width>{~a.value & (a.mask >> a.shift)};
-}
 
 } // namespace generic
 } // namespace platform

@@ -1,7 +1,7 @@
 #include "sim.hpp"
 
 namespace platform::sim {
-
+/*
 extern const SIM_SOPT1_t    SIM_SOPT1    {0x4004'7000};
 extern const SIM_SOPT1CFG_t SIM_SOPT1CFG {0x4004'7004};
 extern const SIM_SOPT2_t    SIM_SOPT2    {0x4004'8004};
@@ -24,5 +24,5 @@ extern const SIM_UIDH_t     SIM_UIDH     {0x4004'8054};
 extern const SIM_UIDHM_t    SIM_UIDHM    {0x4004'8058};
 extern const SIM_UIDML_t    SIM_UIDML    {0x4004'805C};
 extern const SIM_UIDL_t     SIM_UIDL     {0x4004'8060};
-
+*/
 } // namespace platform::sim

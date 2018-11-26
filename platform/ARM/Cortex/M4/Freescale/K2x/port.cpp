@@ -1,7 +1,7 @@
 #include "port.hpp"
 
 namespace platform::port {
-
+/*
 constexpr PORTx_GPCyR::Lock_Register   PORTx_GPCyR::unlocked;
 constexpr PORTx_GPCyR::Lock_Register   PORTx_GPCyR::locked;
 constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::disabled_analog;
@@ -219,5 +219,5 @@ extern const PORTx_ISFR PORTE_ISFR {0x4004'D0A0};
 extern const PORTx_DFER PORTE_DFER {0x4004'D0C0};
 extern const PORTx_DFCR PORTE_DFCR {0x4004'D0C4};
 extern const PORTx_DFWR PORTE_DFWR {0x4004'D0C8};
-
+*/
 } // namespace platform::port

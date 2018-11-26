@@ -3,43 +3,19 @@
 #include <util/bit_manipulation.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/register.hpp>
 
-/* W1C bitfield
-   using field_type = W1C<register_name, offset>;
-   auto field_name const { return field_type::read(*this); }
-   auto field_name(field_type::clear_flag) const { field_type::clear(*this); }
-   static constexpr field_type name {value};
-   static constexpr field_type::clear_flag name {};
-*/
-
-/* Single bit
-   using field_type = Bitfield<register_name, offset>;
-   auto field_name const { return field_type::read(*this); }
-   auto field_name(field_type val) const { field_type::write(*this, val); }
-   static constexpr field_type name {value};
-*/
-
-/* Multi-bit
-   using field_type = Bitfield<register_name, offset, length>;
-   auto field_name const { return field_type::read(*this); }
-   auto field_name(field_type val) const { field_type::write(*this, val); }
-   static constexpr field_type name {value};
-*/
-
 namespace platform::port {
 
-struct PORTx_PCRn : public Register<PORTx_PCRn> {
-    using Register<PORTx_PCRn>::Register;
-
+struct PORTx_PCRn : public Register<std::uint32_t> {
     using Interrupt_Status = W1C<PORTx_PCRn, 24>;
-    auto ISF() const { return Interrupt_Status::read(*this); }
-    auto ISF(Interrupt_Status::clear_flag) const { Interrupt_Status::clear(*this); }
+    auto ISF() const volatile { return Interrupt_Status::decode(this); }
+    auto ISF(Interrupt_Status::clear_flag) volatile { Interrupt_Status::clear(this); }
     static constexpr Interrupt_Status interrupt_not_active {false};
     static constexpr Interrupt_Status interrupt_active {true};
     static constexpr Interrupt_Status::clear_flag clear_interrupt {};
 
-    using Interrupt_Configuration = Bitfield<PORTx_PCRn, 16, 4>;
-    auto IRQC() const { return Interrupt_Configuration::read(*this); }
-    auto IRQC(Interrupt_Configuration val) const { Interrupt_Configuration::write(*this, val); }
+    using Interrupt_Configuration = Bitfield<PORTx_PCRn, 19, 16>;
+    auto IRQC() const volatile { return Interrupt_Configuration::decode(this); }
+    void IRQC(Interrupt_Configuration val) volatile { val.update(this); }
     static constexpr Interrupt_Configuration interrupt_DMA_disabled {0b0000};
     static constexpr Interrupt_Configuration DMA_request_on_rising_edge {0b0001};
     static constexpr Interrupt_Configuration DMA_request_on_falling_edge {0b0010};
@@ -51,14 +27,14 @@ struct PORTx_PCRn : public Register<PORTx_PCRn> {
     static constexpr Interrupt_Configuration interrupt_when_logic_1 {0b1100};
 
     using Lock_Register = Bitfield<PORTx_PCRn, 15>;
-    auto LK() const { return Lock_Register::read(*this); }
-    auto LK(Lock_Register val) const { Lock_Register::write(*this, val); }
+    auto LK() const volatile { return Lock_Register::decode(this); }
+    auto LK(Lock_Register val) volatile { val.update(this); }
     static constexpr Lock_Register unlocked {0};
     static constexpr Lock_Register locked {1};
 
-    using Pin_Mux_Control = Bitfield<PORTx_PCRn, 8, 3>;
-    auto MUX() const { return Pin_Mux_Control::read(*this); }
-    auto MUX(Pin_Mux_Control val) const { Pin_Mux_Control::write(*this, val); }
+    using Pin_Mux_Control = Bitfield<PORTx_PCRn, 10, 8>;
+    auto MUX() const volatile { return Pin_Mux_Control::decode(this); }
+    auto MUX(Pin_Mux_Control val) volatile { val.update(this); }
     static constexpr Pin_Mux_Control disabled_analog {0b000};
     static constexpr Pin_Mux_Control alternative_1_GPIO {0b001};
     static constexpr Pin_Mux_Control alternative_2 {0b010};
@@ -69,45 +45,43 @@ struct PORTx_PCRn : public Register<PORTx_PCRn> {
     static constexpr Pin_Mux_Control alternative_7 {0b111};
 
     using Drive_Strength = Bitfield<PORTx_PCRn, 6>;
-    auto DSE() { return Drive_Strength::read(*this); }
-    auto DSE(Drive_Strength val) { Drive_Strength::write(*this, val); }
+    auto DSE() const volatile { return Drive_Strength::decode(this); }
+    auto DSE(Drive_Strength val) volatile { val.update(this); }
     static constexpr Drive_Strength low_drive {false};
     static constexpr Drive_Strength high_drive {true};
 
     using Open_Drain = Bitfield<PORTx_PCRn, 5>;
-    auto ODE() { return Open_Drain::read(*this); }
-    auto ODE(Open_Drain val) { return Open_Drain::write(*this, val); }
+    auto ODE() const volatile { return Open_Drain::decode(this); }
+    auto ODE(Open_Drain val) volatile { return val.update(this); }
     static constexpr Open_Drain open_drain_disabled {false};
     static constexpr Open_Drain open_drain_enabled {true};
 
     using Passive_Filter = Bitfield<PORTx_PCRn, 4>;
-    auto PFE() { return Passive_Filter::read(*this); }
-    auto PFE(Passive_Filter val) { return Passive_Filter::write(*this, val); }
+    auto PFE() const volatile { return Passive_Filter::decode(this); }
+    auto PFE(Passive_Filter val) volatile { return val.update(this); }
     static constexpr Passive_Filter passive_filter_disabled {false};
     static constexpr Passive_Filter passive_filter_enabled {true};
 
     using Slew_Rate = Bitfield<PORTx_PCRn, 2>;
-    auto SRE() { return Slew_Rate::read(*this); }
-    auto SRE(Slew_Rate val) { Slew_Rate::write(*this, val); }
+    auto SRE() const volatile { return Slew_Rate::decode(this); }
+    auto SRE(Slew_Rate val) volatile { val.update(this); }
     static constexpr Slew_Rate fast_slew_rate {false};
     static constexpr Slew_Rate slow_slew_rate {true};
 
     using Internal_Pull = Bitfield<PORTx_PCRn, 1>;
-    auto PE() { return Internal_Pull::read(*this); }
-    auto PE(Internal_Pull val) { Internal_Pull::write(*this, val); }
+    auto PE() const volatile { return Internal_Pull::decode(this); }
+    auto PE(Internal_Pull val) volatile { val.update(this); }
     static constexpr Internal_Pull internal_pull_disabled {false};
     static constexpr Internal_Pull internal_pull_enabled  {true};
 
     using Pull_Select = Bitfield<PORTx_PCRn, 0>;
-    auto PS() { return Pull_Select::read(*this); }
-    auto PS(Pull_Select val) { Pull_Select::write(*this, val); }
+    auto PS() const volatile { return Pull_Select::decode(this); }
+    auto PS(Pull_Select val) volatile { val.update(this); }
     static constexpr Pull_Select pull_down {false};
     static constexpr Pull_Select pull_up   {true};
 };
 
-struct PORTx_GPCyR : public Register<PORTx_GPCyR> {
-    using Register<PORTx_GPCyR>::Register;
-
+struct PORTx_GPCyR : public Register<std::uint32_t> {
     using Lock_Register = Bitfield<PORTx_GPCyR, 15>;
     static constexpr Lock_Register unlocked {0};
     static constexpr Lock_Register locked {1};
@@ -148,62 +122,50 @@ struct PORTx_GPCyR : public Register<PORTx_GPCyR> {
 };
 
 struct PORTx_GPCLR : public PORTx_GPCyR {
-    using PORTx_GPCyR::PORTx_GPCyR;
-
     template <typename... Args>
     std::enable_if_t<
         std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCLR>...>::value>
-    set(const util::Bitmask<std::uint32_t> bits, const Args... args) const {
+    set(const util::Bitmask<std::uint32_t> bits, const Args... args) volatile {
         write((bits.mask << 16) | value(args...));
     }
 };
 
 struct PORTx_GPCHR : public PORTx_GPCyR {
-    using PORTx_GPCyR::PORTx_GPCyR;
-
     template <typename... Args>
     std::enable_if_t<
         std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCHR>...>::value>
-    set(util::Bitmask<std::uint32_t> bits, Args... args) const {
+    set(util::Bitmask<std::uint32_t> bits, Args... args) volatile {
         write(bits.mask | value(args...));
     }
 };
 
-struct PORTx_ISFR : public Register<PORTx_ISFR> {
-    using Register<PORTx_ISFR>::Register;
-
+struct PORTx_ISFR : public Register<std::uint32_t> {
     template <typename... Bits>
-    void clear(Bits... bits) const { write(util::Bitmask<std::uint32_t>{bits...}.mask); }
+    void clear(Bits... bits) volatile { write(util::Bitmask<std::uint32_t>{bits...}.mask); }
     template <typename... Bits>
-    bool is_set(Bits... pins) const { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
+    bool is_set(Bits... pins) const volatile { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
-struct PORTx_DFER : public Register<PORTx_DFER> {
-    using Register<PORTx_DFER>::Register;
-
+struct PORTx_DFER : public Register<std::uint32_t> {
     template <typename... Bits>
-    void enable_filter_for_pins(Bits... bits) const {
+    void enable_filter_for_pins(Bits... bits) volatile {
         write(read() | util::Bitmask<std::uint32_t>{bits...}.mask);
     }
     template <typename... Bits>
-    void disable_filter_for_pins(Bits... bits) const {
+    void disable_filter_for_pins(Bits... bits) volatile {
         write(read() & ~util::Bitmask<std::uint32_t>{bits...}.mask);
     }
 };
 
-struct PORTx_DFCR : public Register<PORTx_DFCR> {
-    using Register<PORTx_DFCR>::Register;
-
+struct PORTx_DFCR : public Register<std::uint32_t> {
     using Clock_Source = Bitfield<PORTx_DFCR, 0>;
-    auto CS() const { return Clock_Source::read(*this); }
-    auto CS(Clock_Source val) const { Clock_Source::write(*this, val); }
+    auto CS() const volatile { return Clock_Source::decode(this); }
+    auto CS(Clock_Source value) volatile { value.update(this); }
     static constexpr Clock_Source bus_clock {false};
     static constexpr Clock_Source LPO_1_kHz {true};
 };
 
-struct PORTx_DFWR : public Register<PORTx_DFWR> {
-    using Register<PORTx_DFWR>::Register;
-
+struct PORTx_DFWR : public Register<std::uint32_t> {
     void write_filter_length(std::uint32_t length) { write(length & 0b11111u); }
     std::uint32_t read_filter_length() { return read(); }
 };

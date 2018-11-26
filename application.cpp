@@ -19,9 +19,10 @@ struct Bitfield {
     static constexpr typename R::reg_t mask = ((1u << width) - 1u) << offset;
 
     constexpr Bitfield(typename R::reg_t raw) : value{raw} {}
-    template <class>
-    Bitfield(R* reg) : value{static_cast<typename R::reg_t>((reg->read() & mask) >> offset)} {}
 
+    static Bitfield decode(const volatile R* reg) {
+        return Bitfield{static_cast<typename R::reg_t>((reg->read() & mask) >> offset)};
+    }
     void update(volatile R* reg) { reg->write((reg->read() & ~mask) | (value << offset)); }
 };
 
@@ -77,6 +78,7 @@ public:
     using bitband_enabled = std::true_type;
     typedef T reg_t;
 
+    T read() volatile { return raw(); }
     T read() const volatile { return raw(); }
 
     template <typename Number>
@@ -97,7 +99,7 @@ struct WDOG_STCTRLH_t : public Register<std::uint16_t> {
     using Bits = Bitfield<WDOG_STCTRLH_t, msb, lsb>;
 
     using Enable_Watchdog = Bits<0>;
-    //auto WDOGEN() const volatile { return Enable_Watchdog{this}; }
+    auto WDOGEN() const volatile { return Enable_Watchdog::decode(this); }
     void WDOGEN(Enable_Watchdog value) volatile { value.update(this); }
     static constexpr Enable_Watchdog enable_watchdog {1};
     static constexpr Enable_Watchdog disable_watchdog {0};
@@ -135,6 +137,7 @@ auto& SIM_SCGC5 = *reinterpret_cast<volatile SIM_SCGC5_t*>(0x4004'8038);
 extern "C" void low_level_init() {
     WDOG_UNLOCK.unlock();
     WDOG_STCTRLH.WDOGEN(WDOG_STCTRLH.enable_watchdog);
+    WDOG_STCTRLH.WDOGEN();
 
     SIM_SCGC5.enable_clock(SIM_SCGC5.PORTA,
                            SIM_SCGC5.PORTB,
