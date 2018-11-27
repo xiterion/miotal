@@ -1,30 +1,7 @@
 #include "port.hpp"
 
 namespace platform::port {
-/*
-constexpr PORTx_GPCyR::Lock_Register   PORTx_GPCyR::unlocked;
-constexpr PORTx_GPCyR::Lock_Register   PORTx_GPCyR::locked;
-constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::disabled_analog;
-constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::alternative_1_GPIO;
-constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::alternative_2;
-constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::alternative_3;
-constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::alternative_4;
-constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::alternative_5;
-constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::alternative_6;
-constexpr PORTx_GPCyR::Pin_Mux_Control PORTx_GPCyR::alternative_7;
-constexpr PORTx_GPCyR::Drive_Strength  PORTx_GPCyR::low_drive;
-constexpr PORTx_GPCyR::Drive_Strength  PORTx_GPCyR::high_drive;
-constexpr PORTx_GPCyR::Open_Drain      PORTx_GPCyR::open_drain_disabled;
-constexpr PORTx_GPCyR::Open_Drain      PORTx_GPCyR::open_drain_enabled;
-constexpr PORTx_GPCyR::Passive_Filter  PORTx_GPCyR::passive_filter_disabled;
-constexpr PORTx_GPCyR::Passive_Filter  PORTx_GPCyR::passive_filter_enabled;
-constexpr PORTx_GPCyR::Slew_Rate       PORTx_GPCyR::fast_slew_rate;
-constexpr PORTx_GPCyR::Slew_Rate       PORTx_GPCyR::slow_slew_rate;
-constexpr PORTx_GPCyR::Internal_Pull   PORTx_GPCyR::internal_pull_disabled;
-constexpr PORTx_GPCyR::Internal_Pull   PORTx_GPCyR::internal_pull_enabled ;
-constexpr PORTx_GPCyR::Pull_Select     PORTx_GPCyR::pull_down;
-constexpr PORTx_GPCyR::Pull_Select     PORTx_GPCyR::pull_up;
-*/
+
 volatile PORTx_PCRn& PORTA_PCR0 = *reinterpret_cast<volatile PORTx_PCRn*>(0x4004'9000);
 volatile PORTx_PCRn& PORTA_PCR1 = *reinterpret_cast<volatile PORTx_PCRn*>(0x4004'9004);
 volatile PORTx_PCRn& PORTA_PCR2 = *reinterpret_cast<volatile PORTx_PCRn*>(0x4004'9008);

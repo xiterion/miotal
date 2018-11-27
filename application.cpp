@@ -1,11 +1,5 @@
-#include <cstdint>
-#include <climits>
-#include <stdexcept>
-#include <tuple>
-
 #include <hal/pin.hpp>
-#include <platform/ARM/Cortex/M4/Freescale/K2x/gpio.hpp>
-#include <platform/ARM/Cortex/M4/Freescale/K2x/platform.hpp>
+#include <platform/ARM/Cortex/M4/Freescale/K2x/port.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/K2x/sim.hpp>
 #include <platform/ARM/Cortex/M4/Freescale/K2x/wdog.hpp>
 
@@ -24,5 +18,6 @@ extern "C" void low_level_init() {
 }
 
 int main(void) {
+    platform::sim::SIM_SCGC5.disable_clock(platform::sim::SIM_SCGC5.PORTA);
     while(1) {}
 }
