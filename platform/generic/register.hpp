@@ -23,12 +23,17 @@ struct Bitfield {
     }
     void update(volatile R* reg) { reg->write((reg->read() & ~mask) | (value << offset)); }
 };
-/*
+
+template <typename R, std::size_t msb, std::size_t lsb>
+bool operator==(const Bitfield<R, msb, lsb>& lhs, const Bitfield<R, msb, lsb>& rhs) {
+    return lhs.value == rhs.value;
+}
+
 template <typename R, std::size_t msb, std::size_t lsb>
 constexpr auto operator~(const Bitfield<R, msb, lsb>& a) {
-    return Bitfield<R, msb, lsb>{static_cast<R::reg_t>(~a.value & (a.mask >> a.offset))};
+    return Bitfield<R, msb, lsb>{static_cast<typename R::reg_t>(~a.value & (a.mask >> a.offset))};
 }
-*/
+
 template <typename T, typename... Args>
 inline constexpr T mask(Args... args);
 

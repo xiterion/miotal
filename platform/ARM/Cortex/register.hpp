@@ -10,6 +10,7 @@ namespace platform {
 
 template <typename T>
 class Register : public generic::Generic_Register<T> {
+public:
     using bitband_enabled = std::true_type;
 };
 
@@ -18,6 +19,11 @@ template <typename R,
           std::size_t lsb=msb,
           typename BitbandAllowed = void>
 struct Bitfield : public generic::Bitfield<R, msb, lsb> {};
+
+template <typename R, std::size_t msb, std::size_t lsb>
+bool operator==(const Bitfield<R, msb, lsb>& lhs, const Bitfield<R, msb, lsb>& rhs) {
+    return lhs.value == rhs.value;
+}
 
 template <typename R, std::size_t bit>
 struct Bitfield<R, bit, bit, std::enable_if_t<R::bitband_enabled::value>> {
@@ -39,7 +45,7 @@ struct Bitfield<R, bit, bit, std::enable_if_t<R::bitband_enabled::value>> {
 private:
     static auto& bitband_register(volatile R* reg, std::size_t offset) {
         return *reinterpret_cast<volatile typename R::reg_t*>(
-                0x2200'0000 + (((reinterpret_cast<std::uintptr_t>(reg)) * 32) + (offset * 4)));
+                0x4400'0000 + (((reinterpret_cast<std::uintptr_t>(reg)) * 32) + (offset * 4)));
     }
 };
 

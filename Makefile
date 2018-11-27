@@ -14,6 +14,7 @@ CXX       := arm-none-eabi-g++ $(CPU) -c
 OBJCOPY   := arm-none-eabi-objcopy
 ASFLAGS   := 
 CFLAGS    := -I.
+CFLAGS    += -Icatch
 CFLAGS    += -ffreestanding
 CFLAGS    += -flto
 CFLAGS    += -ffunction-sections
