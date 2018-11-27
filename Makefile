@@ -3,7 +3,7 @@
 .PHONY: default
 default: debug
 
-V         := @
+$(V).SILENT:
 
 NAME      := test
 CPU       += -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb
@@ -60,30 +60,30 @@ list: debug
 nm: debug
 	arm-none-eabi-gcc-nm -n $(NAME).elf
 
-$(NAME).elf: $(OBJECTS)
+$(NAME).elf: $(OBJECTS) | $(PLATFORM)/platform.ld
 	@echo LD $@
-	$V $(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-	$V $(SIZE) $@
+	$(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	$(SIZE) $@
 
 $(NAME).bin: $(NAME).elf
 	@echo OBJCOPY $@
-	$V $(OBJCOPY) -O binary $< $@
+	$(OBJCOPY) -O binary $< $@
 
 %.o: %.cpp %.d
 	@echo CXX $@
-	$V $(CXX) $< -o $@ $(CFLAGS) $(CXXFLAGS)
+	$(CXX) $< -o $@ $(CFLAGS) $(CXXFLAGS)
 
 %.o: %.c %.d
 	@echo CC $@
-	$V $(CC) $< -o $@ $(CFLAGS)
+	$(CC) $< -o $@ $(CFLAGS)
 
 %.o: %.s
 	@echo AS $@
-	$V $(AS) $< -o $@ $(ASFLAGS)
+	$(AS) $< -o $@ $(ASFLAGS)
 
 %.d: %.c
 	@echo CDEPEND $@
-	$V case "$(dir $*)" in                                                             \
+	case "$(dir $*)" in                                                             \
 	  "" | "." | "./")                                                                 \
 	    $(CDEPEND) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@;                       \
 	    ;;                                                                             \
@@ -94,7 +94,7 @@ $(NAME).bin: $(NAME).elf
 
 %.d: %.cpp
 	@echo CXXDEPEND $@
-	$V case "$(dir $*)" in                                                             \
+	case "$(dir $*)" in                                                             \
 	  "" | "." | "./")                                                                 \
 	    $(CXXDEPEND) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@;                     \
 	    ;;                                                                             \
@@ -103,18 +103,13 @@ $(NAME).bin: $(NAME).elf
 	    ;;                                                                             \
 	esac
 
-
+ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPENDENCY_FILES)
+endif
 
-$(OBJECTS) $(DEPENDENCY_FILES): Makefile $(PLATFORM)/platform.ld
+$(OBJECTS) $(DEPENDENCY_FILES): Makefile
 
 .PHONY: clean
 clean:
-	rm -f $(NAME).elf $(OBJECTS)
+	rm -f $(NAME).elf $(NAME).bin $(OBJECTS) $(DEPENDENCY_FILES)
 
-.PHONY: cleandeps
-cleandeps:
-	rm -f $(DEPENDENCY_FILES)
-
-.PHONY: cleanall
-cleanall: clean cleandeps
