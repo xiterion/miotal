@@ -2,36 +2,31 @@ ifeq (,$(filter build,$(notdir $(CURDIR))))
 include target.mk
 else
 
-VPATH = $(SRCDIR)
-
 .SUFFIXES:
 
-.PHONY: default
-default: debug
+VPATH = $(SRCDIR)
 
 $(V).SILENT:
 
 NAME      := test
-CPU       += -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb
-PLATFORM  := platform/ARM/Cortex/M4/Freescale/K2x
+CPU       := -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb
+PLATFORM  := ARM/Cortex/M4/NXP/K2x
 AS        := arm-none-eabi-as $(CPU)
-CC        := arm-none-eabi-gcc $(CPU) -c
-CXX       := arm-none-eabi-g++ $(CPU) -c
+CC        := arm-none-eabi-gcc $(CPU)
+CXX       := arm-none-eabi-g++ $(CPU)
 OBJCOPY   := arm-none-eabi-objcopy
 ASFLAGS   := 
 CFLAGS    := -I$(SRCDIR)/include
 CFLAGS    += -I$(SRCDIR)/src
-CFLAGS    += -ffreestanding
-CFLAGS    += -flto
-CFLAGS    += -ffunction-sections
-CXXFLAGS  := -std=c++17
-CXXFLAGS  += -fno-rtti -fno-exceptions -fno-unwind-tables
+CFLAGS    += -ffreestanding -flto -ffunction-sections
+CXXFLAGS  = $(CFLAGS) -std=c++17 -fno-rtti -fno-exceptions -fno-unwind-tables
 
-CDEPEND   := arm-none-eabi-gcc $(CFLAGS) -MM
-CXXDEPEND := arm-none-eabi-g++ $(CFLAGS) $(CXXFLAGS) -MM
+CDEPEND   = arm-none-eabi-gcc $(CFLAGS) -MM
+CXXDEPEND = arm-none-eabi-g++ $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc --specs=nano.specs --specs=nosys.specs $(CPU)
-LDFLAGS   := -flto -T ../lib/ldscripts/ARM/Cortex/M4/NXP/K2x.ld -nostartfiles
+LD        := arm-none-eabi-gcc
+LDFLAGS   := --specs=nano.specs $(CPU)
+LDFLAGS   += -flto -T ../lib/ldscripts/ARM/Cortex/M4/NXP/K2x.ld -nostartfiles
 LDFLAGS   += -Wl,--gc-sections
 LDLIBS    := -lstdc++
 
@@ -46,10 +41,8 @@ OBJECTS               := $(ASOURCES:%.s=%.o) $(CSOURCES:%.c=%.o) $(CXXSOURCES:%.
 OBJECTS               := $(subst $(SRCDIR)/,,$(OBJECTS))
 DEPENDENCY_FILES      := $(OBJECTS:%.o=%.d)
 
-
-.PHONY: test
-test: CFLAGS += -g
-test: $(NAME).elf
+.PHONY: default
+default: debug
 
 .PHONY: debug
 debug: CFLAGS += -g -O1
@@ -58,10 +51,6 @@ debug: $(NAME).elf $(NAME).bin
 .PHONY: release
 release: CFLAGS += -O3
 release: $(NAME).elf $(NAME).bin
-
-.PHONY: nm
-nm: debug
-	arm-none-eabi-gcc-nm -n $(NAME).elf
 
 
 $(NAME).elf: $(OBJECTS) | lib/ldscripts/ARM/Cortex/M4/NXP/K2x.ld
@@ -75,11 +64,11 @@ $(NAME).bin: $(NAME).elf
 
 %.o: %.cpp %.d
 	@echo CXX $@
-	$(CXX) $< -o $@ $(CFLAGS) $(CXXFLAGS)
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.o: %.c %.d
 	@echo CC $@
-	$(CC) $< -o $@ $(CFLAGS)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 %.o: %.s
 	@echo AS $@
@@ -113,6 +102,6 @@ ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPENDENCY_FILES)
 endif
 
-#$(OBJECTS) $(DEPENDENCY_FILES): Makefile
+$(OBJECTS) $(DEPENDENCY_FILES): Makefile
 
 endif
