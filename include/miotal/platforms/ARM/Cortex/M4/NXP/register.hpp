@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include <platform/ARM/Cortex/register.hpp>
+#include <miotal/platforms/ARM/Cortex/register.hpp>
 
 namespace platform {
 

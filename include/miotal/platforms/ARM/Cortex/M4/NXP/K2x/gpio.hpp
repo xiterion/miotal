@@ -4,7 +4,7 @@
 #include <functional>
 
 #include <util/bit_manipulation.hpp>
-#include <platform/ARM/Cortex/M4/Freescale/register.hpp>
+#include <miotal/platforms/ARM/Cortex/M4/NXP/register.hpp>
 
 namespace platform::gpio {
 

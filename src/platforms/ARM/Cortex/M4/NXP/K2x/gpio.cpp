@@ -1,4 +1,4 @@
-#include "gpio.hpp"
+#include <miotal/platforms/ARM/Cortex/M4/NXP/K2x/gpio.hpp>
 
 namespace platform::gpio {
 /*

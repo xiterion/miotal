@@ -1,7 +1,6 @@
-#include <hal/pin.hpp>
-#include <platform/ARM/Cortex/M4/Freescale/K2x/port.hpp>
-#include <platform/ARM/Cortex/M4/Freescale/K2x/sim.hpp>
-#include <platform/ARM/Cortex/M4/Freescale/K2x/wdog.hpp>
+#include <miotal/platforms/ARM/Cortex/M4/NXP/K2x/port.hpp>
+#include <miotal/platforms/ARM/Cortex/M4/NXP/K2x/sim.hpp>
+#include <miotal/platforms/ARM/Cortex/M4/NXP/K2x/wdog.hpp>
 
 extern "C" void low_level_init() {
     using namespace platform::wdog;

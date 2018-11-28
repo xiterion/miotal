@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstddef>
 
-#include <platform/generic/register.hpp>
+#include <miotal/platforms/generic/register.hpp>
 
 namespace platform {
 

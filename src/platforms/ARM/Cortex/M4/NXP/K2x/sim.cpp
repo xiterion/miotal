@@ -1,4 +1,4 @@
-#include "sim.hpp"
+#include <miotal/platforms/ARM/Cortex/M4/NXP/K2x/sim.hpp>
 
 namespace platform::sim {
 

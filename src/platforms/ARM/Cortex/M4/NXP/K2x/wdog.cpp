@@ -1,4 +1,4 @@
-#include "wdog.hpp"
+#include <miotal/platforms/ARM/Cortex/M4/NXP/K2x/wdog.hpp>
 
 namespace platform::wdog {
 

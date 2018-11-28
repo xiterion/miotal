@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <cstring>
 
-#include <platform/ARM/Cortex/M4/Freescale/K2x/wdog.hpp>
+#include <miotal/platforms/ARM/Cortex/M4/NXP/K2x/wdog.hpp>
 
 extern "C" {
 
