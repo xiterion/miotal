@@ -1,7 +1,7 @@
 #pragma once
 
 #include <util/bit_manipulation.hpp>
-#include <miotal/platforms/ARM/Cortex/M4/NXP/register.hpp>
+#include <miotal/ARM/Cortex/M4/NXP/register.hpp>
 
 namespace platform::port {
 

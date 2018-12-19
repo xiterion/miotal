@@ -1,59 +1,90 @@
+.SUFFIXES:
+
 ifeq (,$(filter build,$(notdir $(CURDIR))))
-include target.mk
+
+OBJDIR := build
+
+MAKETARGET = $(MAKE) --no-print-directory -C $@ -f $(CURDIR)/Makefile \
+             SRCDIR=$(CURDIR) $(MAKECMDGOALS)
+
+.PHONY: $(OBJDIR)
+$(OBJDIR):
+	+@[ -d $@ ] || mkdir -p $@
+	+@$(MAKETARGET)
+
+Makefile : ;
+%.mk :: ;
+
+% :: $(OBJDIR) ;
+
+.PHONY: clean
+clean:
+	rm -rf $(OBJDIR)
+
 else
 
-.SUFFIXES:
+PLATFORM  := ARM/Cortex/M4/NXP/K2x
+AR        = $(TARGET)gcc-ar
+AS        = $(TARGET)as $(CPU)
+CC        = $(TARGET)gcc $(CPU)
+CXX       = $(TARGET)g++ $(CPU)
+LD        = $(TARGET)gcc
+NM        = $(TARGET)gcc-nm
+OBJCOPY   = $(TARGET)objcopy
+OBJDUMP   = $(TARGET)objdump
+SIZE      = $(TARGET)size
+
+DIRS :=
+$(foreach D,$(subst /, ,$(PLATFORM)),$(eval DIRS += $(if $(DIRS),$(lastword $(DIRS)$(D)/),$(D)/)))
+PLATFORM_MAKEFILES = $(DIRS:%=$(SRCDIR)/src/%Platform.mk)
+
+include $(PLATFORM_MAKEFILES)
+
+.PHONY: default
+default: debug
 
 VPATH = $(SRCDIR)
 
 $(V).SILENT:
 
-NAME      := test
-CPU       := -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb
-PLATFORM  := ARM/Cortex/M4/NXP/K2x
-AS        := arm-none-eabi-as $(CPU)
-CC        := arm-none-eabi-gcc $(CPU)
-CXX       := arm-none-eabi-g++ $(CPU)
-OBJCOPY   := arm-none-eabi-objcopy
-ASFLAGS   := 
+NAME      := miotal
 CFLAGS    := -I$(SRCDIR)/include
 CFLAGS    += -I$(SRCDIR)/src
 CFLAGS    += -ffreestanding -flto -ffunction-sections
 CXXFLAGS  = $(CFLAGS) -std=c++17 -fno-rtti -fno-exceptions -fno-unwind-tables
 
-CDEPEND   = arm-none-eabi-gcc $(CFLAGS) -MM
-CXXDEPEND = arm-none-eabi-g++ $(CXXFLAGS) -MM
+CDEPEND   = $(CC) $(CFLAGS) -MM
+CXXDEPEND = $(CXX) $(CXXFLAGS) -MM
 
-LD        := arm-none-eabi-gcc
-LDFLAGS   := --specs=nano.specs $(CPU)
-LDFLAGS   += -flto -T ../lib/ldscripts/ARM/Cortex/M4/NXP/K2x.ld -nostartfiles
+LDSCRIPT  = $(SRCDIR)/src/$(PLATFORM)/platform.ld
+LDFLAGS   = --specs=nano.specs $(CPU)
+LDFLAGS   += -flto -T $(LDSCRIPT) -nostartfiles
 LDFLAGS   += -Wl,--gc-sections
 LDLIBS    := -lstdc++
 
-SIZE      := arm-none-eabi-size
-
 rwildcard = $(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d)))
+CXXSOURCES := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/src/$(D)*.cpp))
 
-ASOURCES              := $(call rwildcard,$(SRCDIR),*.s)
-CSOURCES              := $(call rwildcard,$(SRCDIR),*.c)
-CXXSOURCES            := $(call rwildcard,$(SRCDIR),*.cpp)
+ASOURCES              := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/src/$(D)*.s))
+CSOURCES              := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/src/$(D)*.c))
+CXXSOURCES            := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/src/$(D)*.cpp))
 OBJECTS               := $(ASOURCES:%.s=%.o) $(CSOURCES:%.c=%.o) $(CXXSOURCES:%.cpp=%.o)
 OBJECTS               := $(subst $(SRCDIR)/,,$(OBJECTS))
 DEPENDENCY_FILES      := $(OBJECTS:%.o=%.d)
 
-.PHONY: default
-default: debug
-
 .PHONY: debug
 debug: CFLAGS += -g -O1
-debug: $(NAME).elf $(NAME).bin
+debug: $(NAME).a
 
 .PHONY: release
 release: CFLAGS += -O3
-release: $(NAME).elf $(NAME).bin
+release: $(NAME).a
 
+$(NAME).a: $(OBJECTS)
+	@echo AR $@
+	$(AR) rcs $@ $^
 
-$(NAME).elf: $(OBJECTS) | lib/ldscripts/ARM/Cortex/M4/NXP/K2x.ld
+$(NAME).elf: $(OBJECTS) | $(LDSCRIPT)
 	@echo LD $@
 	$(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 	$(SIZE) $@
