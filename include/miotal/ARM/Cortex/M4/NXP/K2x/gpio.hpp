@@ -3,7 +3,7 @@
 #include <array>
 #include <functional>
 
-#include <util/bit_manipulation.hpp>
+#include <miotal/util/bit_manipulation.hpp>
 #include <miotal/ARM/Cortex/M4/NXP/register.hpp>
 
 namespace platform::gpio {
@@ -34,7 +34,7 @@ struct GPIOx_PTOR_t : public Register<std::uint32_t> {
 
 struct GPIOx_PDIR_t : public Register<std::uint32_t> {
     template <typename... Pins>
-    bool read(const Pins... pins) { read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
+    bool read(const Pins... pins) { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
 struct GPIOx_PDDR_t : public Register<std::uint32_t> {
