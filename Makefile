@@ -4,13 +4,10 @@ ifeq (,$(filter build,$(notdir $(CURDIR))))
 
 OBJDIR := build
 
-MAKETARGET = $(MAKE) --no-print-directory -C $@ -f $(CURDIR)/Makefile \
-             SRCDIR=$(CURDIR) $(MAKECMDGOALS)
-
 .PHONY: $(OBJDIR)
 $(OBJDIR):
 	+@[ -d $@ ] || mkdir -p $@
-	+@$(MAKETARGET)
+	+@$(MAKE) --no-print-directory -C $@ -f $(CURDIR)/Makefile SRCDIR=$(CURDIR) $(MAKECMDGOALS)
 
 # Prevent remaking this file or any other .mk file with the build directory creation rule
 Makefile : ;
@@ -25,7 +22,14 @@ clean:
 
 else
 
-PLATFORM  := ARM/Cortex/M4/NXP/K2x
+VPATH = $(SRCDIR)
+
+ifeq (,$(filter test,$(MAKECMDGOALS)))
+PLATFORM := ARM/Cortex/M4/NXP/K2x
+else
+PLATFORM := test
+endif
+
 AR        := $(TARGET)gcc-ar
 AS        := $(TARGET)as $(CPU)
 CC        := $(TARGET)gcc $(CPU)
@@ -42,8 +46,6 @@ PLATFORM_MAKEFILES = $(DIRS:%=$(SRCDIR)/src/%Platform.mk)
 
 .PHONY: default
 default: debug
-
-VPATH = $(SRCDIR)
 
 $(V).SILENT:
 
@@ -137,12 +139,12 @@ $(NAME).bin: $(NAME).elf
 	    ;;                                                                             \
 	esac
 
+$(OBJECTS) $(DEPENDENCY_FILES): Makefile
+
 include $(PLATFORM_MAKEFILES)
 
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPENDENCY_FILES)
 endif
-
-$(OBJECTS) $(DEPENDENCY_FILES): Makefile
 
 endif
