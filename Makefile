@@ -30,15 +30,15 @@ else
 PLATFORM := test
 endif
 
-AR        := $(TARGET)gcc-ar
-AS        := $(TARGET)as $(CPU)
-CC        := $(TARGET)gcc $(CPU)
-CXX       := $(TARGET)g++ $(CPU)
-LD        := $(TARGET)gcc
-NM        := $(TARGET)gcc-nm
-OBJCOPY   := $(TARGET)objcopy
-OBJDUMP   := $(TARGET)objdump
-SIZE      := $(TARGET)size
+AR        = $(TARGET)gcc-ar
+AS        = $(TARGET)as $(CPU)
+CC        = $(TARGET)gcc $(CPU)
+CXX       = $(TARGET)g++ $(CPU)
+LD        = $(TARGET)gcc
+NM        = $(TARGET)gcc-nm
+OBJCOPY   = $(TARGET)objcopy
+OBJDUMP   = $(TARGET)objdump
+SIZE      = $(TARGET)size
 
 DIRS :=
 $(foreach D,$(subst /, ,$(PLATFORM)),$(eval DIRS += $(if $(DIRS),$(lastword $(DIRS)$(D)/),$(D)/)))
@@ -72,7 +72,7 @@ DEPENDENCY_FILES      := $(OBJECTS:%.o=%.d)
 
 .PHONY: debug
 debug: CFLAGS += -g -O1
-debug: $(NAME).a
+debug: $(NAME).elf
 
 .PHONY: release
 release: CFLAGS += -O3
