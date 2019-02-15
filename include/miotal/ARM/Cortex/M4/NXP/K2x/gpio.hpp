@@ -13,13 +13,7 @@ struct GPIOx_PDOR_t : public Register<std::uint32_t> {
 
 struct GPIOx_PSOR_t : public Register<std::uint32_t> {
     template <typename... Pins>
-    void set(const Pins... pins) { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
-/*
-    void set(const int pin) const {
-        std::uintptr_t addr = platform::generic::get_bitband_address(address, pin);
-        Register<GPIOx_PSOR_t>{addr}.write(1);
-    }
-    */
+    void set(const Pins... pins) volatile { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 
 struct GPIOx_PCOR_t : public Register<std::uint32_t> {
