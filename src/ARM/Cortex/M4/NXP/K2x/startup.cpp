@@ -104,29 +104,29 @@ extern void (*__fini_array_end []) ();
 
 [[noreturn]] void _start()
 {
-    // First, call the user defined initialization.  This can't really
-    // go in the GCC defined init section because the compiler sets
-    // up the runtime first, and by that time the window of opportunity
-    // to perform activities like turn off the watchdog timer within
-    // a certain number of cycles of startup has expired.  This ensures
-    // the user has the ability to perform low level actions on the
-    // hardware prior to any potentially heavy-weight startup actions.
-    low_level_init();
+	// First, call the user defined initialization.  This can't really
+	// go in the GCC defined init section because the compiler sets
+	// up the runtime first, and by that time the window of opportunity
+	// to perform activities like turn off the watchdog timer within
+	// a certain number of cycles of startup has expired.  This ensures
+	// the user has the ability to perform low level actions on the
+	// hardware prior to any potentially heavy-weight startup actions.
+	low_level_init();
 
-    std::fill(&__bss_start__, &__bss_end__, 0);
-    std::copy(&__data_load, &_edata_load, &__data_start);
-    std::fill(&__heap_start, &__heap_end, 0x55555555);
-    std::for_each(__preinit_array_start, __preinit_array_end, [](auto& f){ f(); });
-    std::for_each(__init_array_start, __init_array_end, [](auto& f){ f(); });
-    auto ret = main();
-    std::for_each(__fini_array_start, __fini_array_end, [](auto& f){ f(); });
-    _exit(ret);
+	std::fill(&__bss_start__, &__bss_end__, 0);
+	std::copy(&__data_load, &_edata_load, &__data_start);
+	std::fill(&__heap_start, &__heap_end, 0x55555555);
+	std::for_each(__preinit_array_start, __preinit_array_end, [](auto& f){ f(); });
+	std::for_each(__init_array_start, __init_array_end, [](auto& f){ f(); });
+	auto ret = main();
+	std::for_each(__fini_array_start, __fini_array_end, [](auto& f){ f(); });
+	_exit(ret);
 }
 
 __attribute__((weak)) void low_level_init() {
-    using namespace platform::wdog;
-    WDOG_UNLOCK.unlock();
-    WDOG_STCTRLH.write(WDOG_STCTRLH.disable_watchdog);
+	using namespace platform::wdog;
+	WDOG_UNLOCK.unlock();
+	WDOG_STCTRLH.write(WDOG_STCTRLH.disable_watchdog);
 }
 
 namespace { __attribute__((alias("fail"))) void Dummy_handler(); }
@@ -207,98 +207,98 @@ extern uintptr_t __c_stack_top__;
 
 __attribute__((section(".isr_vector"), used)) const intfunc __vector_table[] =
 {
-    reinterpret_cast<intfunc>(&__c_stack_top__),
-    _start,
+	reinterpret_cast<intfunc>(&__c_stack_top__),
+	_start,
 
-    NMI_handler,
-    HardFault_handler,
-    MemManage_handler,
-    BusFault_handler,
-    UsageFault_handler,
-    Dummy_handler,
-    Dummy_handler,
-    Dummy_handler,
-    Dummy_handler,
-    SVC_handler,
-    DebugMon_handler,
-    Dummy_handler,
-    PendSV_handler,
-    SysTick_handler,
+	NMI_handler,
+	HardFault_handler,
+	MemManage_handler,
+	BusFault_handler,
+	UsageFault_handler,
+	Dummy_handler,
+	Dummy_handler,
+	Dummy_handler,
+	Dummy_handler,
+	SVC_handler,
+	DebugMon_handler,
+	Dummy_handler,
+	PendSV_handler,
+	SysTick_handler,
 
-    DMA_channel_0_complete_handler,
-    DMA_channel_1_complete_handler,
-    DMA_channel_2_complete_handler,
-    DMA_channel_3_complete_handler,
-    DMA_channel_4_complete_handler,
-    DMA_channel_5_complete_handler,
-    DMA_channel_6_complete_handler,
-    DMA_channel_7_complete_handler,
-    DMA_channel_8_complete_handler,
-    DMA_channel_9_complete_handler,
-    DMA_channel_10_complete_handler,
-    DMA_channel_11_complete_handler,
-    DMA_channel_12_complete_handler,
-    DMA_channel_13_complete_handler,
-    DMA_channel_14_complete_handler,
-    DMA_channel_15_complete_handler,
-    DMA_error_handler,
-    FPU_error_handler,
-    Flash_command_complete_handler,
-    Flash_read_collision_handler,
-    Low_voltage_detect_handler,
-    Low_leakage_wakeup_handler,
-    Watchdog_handler,
-    Random_number_generator_handler,
-    Dummy_handler,
-    Dummy_handler,
-    SPI0_handler,
-    SPI1_handler,
-    I2S0_transmit_handler,
-    I2S0_receive_handler,
-    LPUART0_status_and_error_handler,
-    UART0_status_handler,
-    UART0_error_handler,
-    UART1_status_handler,
-    UART1_error_handler,
-    UART2_status_handler,
-    UART2_error_handler,
-    Dummy_handler,
-    Dummy_handler,
-    ADC0_handler,
-    CMP0_handler,
-    CMP1_handler,
-    FTM0_handler,
-    FTM1_handler,
-    FTM2_handler,
-    Dummy_handler,
-    Real_time_clock_alarm_handler,
-    Real_time_clock_seconds_handler,
-    Programmable_interrupt_timer_channel_0_handler,
-    Programmable_interrupt_timer_channel_1_handler,
-    Programmable_interrupt_timer_channel_2_handler,
-    Programmable_interrupt_timer_channel_3_handler,
-    Programmable_delay_block_handler,
-    USB_OTG_handler,
-    Dummy_handler,
-    Dummy_handler,
-    DAC0_handler,
-    Master_clock_generation_handler,
-    Low_power_timer_handler,
-    Pin_detect_port_A_handler,
-    Pin_detect_port_B_handler,
-    Pin_detect_port_C_handler,
-    Pin_detect_port_D_handler,
-    Pin_detect_port_E_handler,
-    Software_interrupt_handler,
-    Dummy_handler,
-    Dummy_handler,
-    Dummy_handler,
-    Dummy_handler,
-    Dummy_handler,
-    Dummy_handler,
-    FTM3_handler,
-    DAC1_handler,
-    ADC1_handler
+	DMA_channel_0_complete_handler,
+	DMA_channel_1_complete_handler,
+	DMA_channel_2_complete_handler,
+	DMA_channel_3_complete_handler,
+	DMA_channel_4_complete_handler,
+	DMA_channel_5_complete_handler,
+	DMA_channel_6_complete_handler,
+	DMA_channel_7_complete_handler,
+	DMA_channel_8_complete_handler,
+	DMA_channel_9_complete_handler,
+	DMA_channel_10_complete_handler,
+	DMA_channel_11_complete_handler,
+	DMA_channel_12_complete_handler,
+	DMA_channel_13_complete_handler,
+	DMA_channel_14_complete_handler,
+	DMA_channel_15_complete_handler,
+	DMA_error_handler,
+	FPU_error_handler,
+	Flash_command_complete_handler,
+	Flash_read_collision_handler,
+	Low_voltage_detect_handler,
+	Low_leakage_wakeup_handler,
+	Watchdog_handler,
+	Random_number_generator_handler,
+	Dummy_handler,
+	Dummy_handler,
+	SPI0_handler,
+	SPI1_handler,
+	I2S0_transmit_handler,
+	I2S0_receive_handler,
+	LPUART0_status_and_error_handler,
+	UART0_status_handler,
+	UART0_error_handler,
+	UART1_status_handler,
+	UART1_error_handler,
+	UART2_status_handler,
+	UART2_error_handler,
+	Dummy_handler,
+	Dummy_handler,
+	ADC0_handler,
+	CMP0_handler,
+	CMP1_handler,
+	FTM0_handler,
+	FTM1_handler,
+	FTM2_handler,
+	Dummy_handler,
+	Real_time_clock_alarm_handler,
+	Real_time_clock_seconds_handler,
+	Programmable_interrupt_timer_channel_0_handler,
+	Programmable_interrupt_timer_channel_1_handler,
+	Programmable_interrupt_timer_channel_2_handler,
+	Programmable_interrupt_timer_channel_3_handler,
+	Programmable_delay_block_handler,
+	USB_OTG_handler,
+	Dummy_handler,
+	Dummy_handler,
+	DAC0_handler,
+	Master_clock_generation_handler,
+	Low_power_timer_handler,
+	Pin_detect_port_A_handler,
+	Pin_detect_port_B_handler,
+	Pin_detect_port_C_handler,
+	Pin_detect_port_D_handler,
+	Pin_detect_port_E_handler,
+	Software_interrupt_handler,
+	Dummy_handler,
+	Dummy_handler,
+	Dummy_handler,
+	Dummy_handler,
+	Dummy_handler,
+	Dummy_handler,
+	FTM3_handler,
+	DAC1_handler,
+	ADC1_handler
 };
 
 } // extern "C"

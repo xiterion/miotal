@@ -6,168 +6,168 @@
 namespace platform::port {
 
 struct PORTx_PCRn : public Register<std::uint32_t> {
-    using Interrupt_Status = W1C<PORTx_PCRn, 24>;
-    auto ISF() const volatile { return Interrupt_Status::decode(this); }
-    auto ISF(Interrupt_Status::clear_flag) volatile { Interrupt_Status::clear(this); }
-    static constexpr Interrupt_Status interrupt_not_active {false};
-    static constexpr Interrupt_Status interrupt_active {true};
-    static constexpr Interrupt_Status::clear_flag clear_interrupt {};
+	using Interrupt_Status = W1C<PORTx_PCRn, 24>;
+	auto ISF() const volatile { return Interrupt_Status::decode(this); }
+	auto ISF(Interrupt_Status::clear_flag) volatile { Interrupt_Status::clear(this); }
+	static constexpr Interrupt_Status interrupt_not_active {false};
+	static constexpr Interrupt_Status interrupt_active {true};
+	static constexpr Interrupt_Status::clear_flag clear_interrupt {};
 
-    using Interrupt_Configuration = Bitfield<PORTx_PCRn, 19, 16>;
-    auto IRQC() const volatile { return Interrupt_Configuration::decode(this); }
-    void IRQC(Interrupt_Configuration val) volatile { val.update(this); }
-    static constexpr Interrupt_Configuration interrupt_DMA_disabled {0b0000};
-    static constexpr Interrupt_Configuration DMA_request_on_rising_edge {0b0001};
-    static constexpr Interrupt_Configuration DMA_request_on_falling_edge {0b0010};
-    static constexpr Interrupt_Configuration DMA_request_on_either_edge {0b0011};
-    static constexpr Interrupt_Configuration interrupt_when_logic_0 {0b1000};
-    static constexpr Interrupt_Configuration interrupt_on_rising_edge {0b1001};
-    static constexpr Interrupt_Configuration interrupt_on_falling_edge {0b1010};
-    static constexpr Interrupt_Configuration interrupt_on_either_edge {0b1011};
-    static constexpr Interrupt_Configuration interrupt_when_logic_1 {0b1100};
+	using Interrupt_Configuration = Bitfield<PORTx_PCRn, 19, 16>;
+	auto IRQC() const volatile { return Interrupt_Configuration::decode(this); }
+	void IRQC(Interrupt_Configuration val) volatile { val.update(this); }
+	static constexpr Interrupt_Configuration interrupt_DMA_disabled {0b0000};
+	static constexpr Interrupt_Configuration DMA_request_on_rising_edge {0b0001};
+	static constexpr Interrupt_Configuration DMA_request_on_falling_edge {0b0010};
+	static constexpr Interrupt_Configuration DMA_request_on_either_edge {0b0011};
+	static constexpr Interrupt_Configuration interrupt_when_logic_0 {0b1000};
+	static constexpr Interrupt_Configuration interrupt_on_rising_edge {0b1001};
+	static constexpr Interrupt_Configuration interrupt_on_falling_edge {0b1010};
+	static constexpr Interrupt_Configuration interrupt_on_either_edge {0b1011};
+	static constexpr Interrupt_Configuration interrupt_when_logic_1 {0b1100};
 
-    using Lock_Register = Bitfield<PORTx_PCRn, 15>;
-    auto LK() const volatile { return Lock_Register::decode(this); }
-    auto LK(Lock_Register val) volatile { val.update(this); }
-    static constexpr Lock_Register unlocked {0};
-    static constexpr Lock_Register locked {1};
+	using Lock_Register = Bitfield<PORTx_PCRn, 15>;
+	auto LK() const volatile { return Lock_Register::decode(this); }
+	auto LK(Lock_Register val) volatile { val.update(this); }
+	static constexpr Lock_Register unlocked {0};
+	static constexpr Lock_Register locked {1};
 
-    using Pin_Mux_Control = Bitfield<PORTx_PCRn, 10, 8>;
-    auto MUX() const volatile { return Pin_Mux_Control::decode(this); }
-    auto MUX(Pin_Mux_Control val) volatile { val.update(this); }
-    static constexpr Pin_Mux_Control disabled_analog {0b000};
-    static constexpr Pin_Mux_Control alternative_1_GPIO {0b001};
-    static constexpr Pin_Mux_Control alternative_2 {0b010};
-    static constexpr Pin_Mux_Control alternative_3 {0b011};
-    static constexpr Pin_Mux_Control alternative_4 {0b100};
-    static constexpr Pin_Mux_Control alternative_5 {0b101};
-    static constexpr Pin_Mux_Control alternative_6 {0b110};
-    static constexpr Pin_Mux_Control alternative_7 {0b111};
+	using Pin_Mux_Control = Bitfield<PORTx_PCRn, 10, 8>;
+	auto MUX() const volatile { return Pin_Mux_Control::decode(this); }
+	auto MUX(Pin_Mux_Control val) volatile { val.update(this); }
+	static constexpr Pin_Mux_Control disabled_analog {0b000};
+	static constexpr Pin_Mux_Control alternative_1_GPIO {0b001};
+	static constexpr Pin_Mux_Control alternative_2 {0b010};
+	static constexpr Pin_Mux_Control alternative_3 {0b011};
+	static constexpr Pin_Mux_Control alternative_4 {0b100};
+	static constexpr Pin_Mux_Control alternative_5 {0b101};
+	static constexpr Pin_Mux_Control alternative_6 {0b110};
+	static constexpr Pin_Mux_Control alternative_7 {0b111};
 
-    using Drive_Strength = Bitfield<PORTx_PCRn, 6>;
-    auto DSE() const volatile { return Drive_Strength::decode(this); }
-    auto DSE(Drive_Strength val) volatile { val.update(this); }
-    static constexpr Drive_Strength low_drive {false};
-    static constexpr Drive_Strength high_drive {true};
+	using Drive_Strength = Bitfield<PORTx_PCRn, 6>;
+	auto DSE() const volatile { return Drive_Strength::decode(this); }
+	auto DSE(Drive_Strength val) volatile { val.update(this); }
+	static constexpr Drive_Strength low_drive {false};
+	static constexpr Drive_Strength high_drive {true};
 
-    using Open_Drain = Bitfield<PORTx_PCRn, 5>;
-    auto ODE() const volatile { return Open_Drain::decode(this); }
-    auto ODE(Open_Drain val) volatile { return val.update(this); }
-    static constexpr Open_Drain open_drain_disabled {false};
-    static constexpr Open_Drain open_drain_enabled {true};
+	using Open_Drain = Bitfield<PORTx_PCRn, 5>;
+	auto ODE() const volatile { return Open_Drain::decode(this); }
+	auto ODE(Open_Drain val) volatile { return val.update(this); }
+	static constexpr Open_Drain open_drain_disabled {false};
+	static constexpr Open_Drain open_drain_enabled {true};
 
-    using Passive_Filter = Bitfield<PORTx_PCRn, 4>;
-    auto PFE() const volatile { return Passive_Filter::decode(this); }
-    auto PFE(Passive_Filter val) volatile { return val.update(this); }
-    static constexpr Passive_Filter passive_filter_disabled {false};
-    static constexpr Passive_Filter passive_filter_enabled {true};
+	using Passive_Filter = Bitfield<PORTx_PCRn, 4>;
+	auto PFE() const volatile { return Passive_Filter::decode(this); }
+	auto PFE(Passive_Filter val) volatile { return val.update(this); }
+	static constexpr Passive_Filter passive_filter_disabled {false};
+	static constexpr Passive_Filter passive_filter_enabled {true};
 
-    using Slew_Rate = Bitfield<PORTx_PCRn, 2>;
-    auto SRE() const volatile { return Slew_Rate::decode(this); }
-    auto SRE(Slew_Rate val) volatile { val.update(this); }
-    static constexpr Slew_Rate fast_slew_rate {false};
-    static constexpr Slew_Rate slow_slew_rate {true};
+	using Slew_Rate = Bitfield<PORTx_PCRn, 2>;
+	auto SRE() const volatile { return Slew_Rate::decode(this); }
+	auto SRE(Slew_Rate val) volatile { val.update(this); }
+	static constexpr Slew_Rate fast_slew_rate {false};
+	static constexpr Slew_Rate slow_slew_rate {true};
 
-    using Internal_Pull = Bitfield<PORTx_PCRn, 1>;
-    auto PE() const volatile { return Internal_Pull::decode(this); }
-    auto PE(Internal_Pull val) volatile { val.update(this); }
-    static constexpr Internal_Pull internal_pull_disabled {false};
-    static constexpr Internal_Pull internal_pull_enabled  {true};
+	using Internal_Pull = Bitfield<PORTx_PCRn, 1>;
+	auto PE() const volatile { return Internal_Pull::decode(this); }
+	auto PE(Internal_Pull val) volatile { val.update(this); }
+	static constexpr Internal_Pull internal_pull_disabled {false};
+	static constexpr Internal_Pull internal_pull_enabled  {true};
 
-    using Pull_Select = Bitfield<PORTx_PCRn, 0>;
-    auto PS() const volatile { return Pull_Select::decode(this); }
-    auto PS(Pull_Select val) volatile { val.update(this); }
-    static constexpr Pull_Select pull_down {false};
-    static constexpr Pull_Select pull_up   {true};
+	using Pull_Select = Bitfield<PORTx_PCRn, 0>;
+	auto PS() const volatile { return Pull_Select::decode(this); }
+	auto PS(Pull_Select val) volatile { val.update(this); }
+	static constexpr Pull_Select pull_down {false};
+	static constexpr Pull_Select pull_up   {true};
 };
 
 struct PORTx_GPCyR : public Register<std::uint32_t> {
-    using Lock_Register = Bitfield<PORTx_GPCyR, 15>;
-    static constexpr Lock_Register unlocked {0};
-    static constexpr Lock_Register locked {1};
+	using Lock_Register = Bitfield<PORTx_GPCyR, 15>;
+	static constexpr Lock_Register unlocked {0};
+	static constexpr Lock_Register locked {1};
 
-    using Pin_Mux_Control = Bitfield<PORTx_GPCyR, 8, 3>;
-    static constexpr Pin_Mux_Control disabled_analog {0b000};
-    static constexpr Pin_Mux_Control alternative_1_GPIO {0b001};
-    static constexpr Pin_Mux_Control alternative_2 {0b010};
-    static constexpr Pin_Mux_Control alternative_3 {0b011};
-    static constexpr Pin_Mux_Control alternative_4 {0b100};
-    static constexpr Pin_Mux_Control alternative_5 {0b101};
-    static constexpr Pin_Mux_Control alternative_6 {0b110};
-    static constexpr Pin_Mux_Control alternative_7 {0b111};
+	using Pin_Mux_Control = Bitfield<PORTx_GPCyR, 8, 3>;
+	static constexpr Pin_Mux_Control disabled_analog {0b000};
+	static constexpr Pin_Mux_Control alternative_1_GPIO {0b001};
+	static constexpr Pin_Mux_Control alternative_2 {0b010};
+	static constexpr Pin_Mux_Control alternative_3 {0b011};
+	static constexpr Pin_Mux_Control alternative_4 {0b100};
+	static constexpr Pin_Mux_Control alternative_5 {0b101};
+	static constexpr Pin_Mux_Control alternative_6 {0b110};
+	static constexpr Pin_Mux_Control alternative_7 {0b111};
 
-    using Drive_Strength = Bitfield<PORTx_GPCyR, 6>;
-    static constexpr Drive_Strength low_drive {false};
-    static constexpr Drive_Strength high_drive {true};
+	using Drive_Strength = Bitfield<PORTx_GPCyR, 6>;
+	static constexpr Drive_Strength low_drive {false};
+	static constexpr Drive_Strength high_drive {true};
 
-    using Open_Drain = Bitfield<PORTx_GPCyR, 5>;
-    static constexpr Open_Drain open_drain_disabled {false};
-    static constexpr Open_Drain open_drain_enabled {true};
+	using Open_Drain = Bitfield<PORTx_GPCyR, 5>;
+	static constexpr Open_Drain open_drain_disabled {false};
+	static constexpr Open_Drain open_drain_enabled {true};
 
-    using Passive_Filter = Bitfield<PORTx_GPCyR, 4>;
-    static constexpr Passive_Filter passive_filter_disabled {false};
-    static constexpr Passive_Filter passive_filter_enabled {true};
+	using Passive_Filter = Bitfield<PORTx_GPCyR, 4>;
+	static constexpr Passive_Filter passive_filter_disabled {false};
+	static constexpr Passive_Filter passive_filter_enabled {true};
 
-    using Slew_Rate = Bitfield<PORTx_GPCyR, 2>;
-    static constexpr Slew_Rate fast_slew_rate {false};
-    static constexpr Slew_Rate slow_slew_rate {true};
+	using Slew_Rate = Bitfield<PORTx_GPCyR, 2>;
+	static constexpr Slew_Rate fast_slew_rate {false};
+	static constexpr Slew_Rate slow_slew_rate {true};
 
-    using Internal_Pull = Bitfield<PORTx_GPCyR, 1>;
-    static constexpr Internal_Pull internal_pull_disabled {false};
-    static constexpr Internal_Pull internal_pull_enabled  {true};
+	using Internal_Pull = Bitfield<PORTx_GPCyR, 1>;
+	static constexpr Internal_Pull internal_pull_disabled {false};
+	static constexpr Internal_Pull internal_pull_enabled  {true};
 
-    using Pull_Select = Bitfield<PORTx_GPCyR, 0>;
-    static constexpr Pull_Select pull_down {false};
-    static constexpr Pull_Select pull_up   {true};
+	using Pull_Select = Bitfield<PORTx_GPCyR, 0>;
+	static constexpr Pull_Select pull_down {false};
+	static constexpr Pull_Select pull_up   {true};
 };
 
 struct PORTx_GPCLR : public PORTx_GPCyR {
-    template <typename... Args>
-    std::enable_if_t<
-        std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCLR>...>::value>
-    set(const util::Bitmask<std::uint32_t> bits, const Args... args) volatile {
-        write((bits.mask << 16) | value(args...));
-    }
+	template <typename... Args>
+	std::enable_if_t<
+		std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCLR>...>::value>
+	set(const util::Bitmask<std::uint32_t> bits, const Args... args) volatile {
+		write((bits.mask << 16) | value(args...));
+	}
 };
 
 struct PORTx_GPCHR : public PORTx_GPCyR {
-    template <typename... Args>
-    std::enable_if_t<
-        std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCHR>...>::value>
-    set(util::Bitmask<std::uint32_t> bits, Args... args) volatile {
-        write(bits.mask | value(args...));
-    }
+	template <typename... Args>
+	std::enable_if_t<
+		std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCHR>...>::value>
+	set(util::Bitmask<std::uint32_t> bits, Args... args) volatile {
+		write(bits.mask | value(args...));
+	}
 };
 
 struct PORTx_ISFR : public Register<std::uint32_t> {
-    template <typename... Bits>
-    void clear(Bits... bits) volatile { write(util::Bitmask<std::uint32_t>{bits...}.mask); }
-    template <typename... Bits>
-    bool is_set(Bits... pins) const volatile { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
+	template <typename... Bits>
+	void clear(Bits... bits) volatile { write(util::Bitmask<std::uint32_t>{bits...}.mask); }
+	template <typename... Bits>
+	bool is_set(Bits... pins) const volatile { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
 struct PORTx_DFER : public Register<std::uint32_t> {
-    template <typename... Bits>
-    void enable_filter_for_pins(Bits... bits) volatile {
-        write(read() | util::Bitmask<std::uint32_t>{bits...}.mask);
-    }
-    template <typename... Bits>
-    void disable_filter_for_pins(Bits... bits) volatile {
-        write(read() & ~util::Bitmask<std::uint32_t>{bits...}.mask);
-    }
+	template <typename... Bits>
+	void enable_filter_for_pins(Bits... bits) volatile {
+		write(read() | util::Bitmask<std::uint32_t>{bits...}.mask);
+	}
+	template <typename... Bits>
+	void disable_filter_for_pins(Bits... bits) volatile {
+		write(read() & ~util::Bitmask<std::uint32_t>{bits...}.mask);
+	}
 };
 
 struct PORTx_DFCR : public Register<std::uint32_t> {
-    using Clock_Source = Bitfield<PORTx_DFCR, 0>;
-    auto CS() const volatile { return Clock_Source::decode(this); }
-    auto CS(Clock_Source value) volatile { value.update(this); }
-    static constexpr Clock_Source bus_clock {false};
-    static constexpr Clock_Source LPO_1_kHz {true};
+	using Clock_Source = Bitfield<PORTx_DFCR, 0>;
+	auto CS() const volatile { return Clock_Source::decode(this); }
+	auto CS(Clock_Source value) volatile { value.update(this); }
+	static constexpr Clock_Source bus_clock {false};
+	static constexpr Clock_Source LPO_1_kHz {true};
 };
 
 struct PORTx_DFWR : public Register<std::uint32_t> {
-    void write_filter_length(std::uint32_t length) { write(length & 0b11111u); }
-    std::uint32_t read_filter_length() { return read(); }
+	void write_filter_length(std::uint32_t length) { write(length & 0b11111u); }
+	std::uint32_t read_filter_length() { return read(); }
 };
 
 extern volatile PORTx_PCRn& PORTA_PCR0;

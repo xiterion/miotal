@@ -40,24 +40,24 @@ struct SIM_SCGC4_t : public Register<std::uint32_t> {
 
 struct SIM_SCGC5_t : public Register<std::uint32_t> {
 
-    template <typename... Args>
-    void enable_clock(const Args... args) volatile {
-        write(args...);
-    }
+	template <typename... Args>
+	void enable_clock(const Args... args) volatile {
+		write(args...);
+	}
 
-    template <typename... Args>
-    void disable_clock(const Args... args) volatile {
-        write(~args...);
-    }
+	template <typename... Args>
+	void disable_clock(const Args... args) volatile {
+		write(~args...);
+	}
 
-    template <std::size_t offset>
-    using Clock_gate = Bitfield<SIM_SCGC5_t, offset>;
+	template <std::size_t offset>
+	using Clock_gate = Bitfield<SIM_SCGC5_t, offset>;
 
-    static constexpr Clock_gate<9>  PORTA {true};
-    static constexpr Clock_gate<10> PORTB {true};
-    static constexpr Clock_gate<11> PORTC {true};
-    static constexpr Clock_gate<12> PORTD {true};
-    static constexpr Clock_gate<13> PORTE {true};
+	static constexpr Clock_gate<9>  PORTA {true};
+	static constexpr Clock_gate<10> PORTB {true};
+	static constexpr Clock_gate<11> PORTC {true};
+	static constexpr Clock_gate<12> PORTD {true};
+	static constexpr Clock_gate<13> PORTE {true};
 };
 
 struct SIM_SCGC6_t : public Register<std::uint32_t> {

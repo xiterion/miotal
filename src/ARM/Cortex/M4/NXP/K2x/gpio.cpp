@@ -3,44 +3,44 @@
 namespace platform::gpio {
 /*
 extern constexpr GPIOx_t GPIOA = {
-    GPIOx_PDOR_t{0x400F'F000},
-    GPIOx_PSOR_t{0x400F'F004},
-    GPIOx_PCOR_t{0x400F'F008},
-    GPIOx_PTOR_t{0x400F'F00C},
-    GPIOx_PDIR_t{0x400F'F010},
-    GPIOx_PDDR_t{0x400F'F014}};
+	GPIOx_PDOR_t{0x400F'F000},
+	GPIOx_PSOR_t{0x400F'F004},
+	GPIOx_PCOR_t{0x400F'F008},
+	GPIOx_PTOR_t{0x400F'F00C},
+	GPIOx_PDIR_t{0x400F'F010},
+	GPIOx_PDDR_t{0x400F'F014}};
 
 extern constexpr GPIOx_t GPIOB = {
-    GPIOx_PDOR_t{0x400F'F040},
-    GPIOx_PSOR_t{0x400F'F044},
-    GPIOx_PCOR_t{0x400F'F048},
-    GPIOx_PTOR_t{0x400F'F04C},
-    GPIOx_PDIR_t{0x400F'F050},
-    GPIOx_PDDR_t{0x400F'F054}};
-    
+	GPIOx_PDOR_t{0x400F'F040},
+	GPIOx_PSOR_t{0x400F'F044},
+	GPIOx_PCOR_t{0x400F'F048},
+	GPIOx_PTOR_t{0x400F'F04C},
+	GPIOx_PDIR_t{0x400F'F050},
+	GPIOx_PDDR_t{0x400F'F054}};
+	
 extern constexpr GPIOx_t GPIOC = {
-    GPIOx_PDOR_t{0x400F'F080},
-    GPIOx_PSOR_t{0x400F'F084},
-    GPIOx_PCOR_t{0x400F'F088},
-    GPIOx_PTOR_t{0x400F'F08C},
-    GPIOx_PDIR_t{0x400F'F090},
-    GPIOx_PDDR_t{0x400F'F094}};
-    
+	GPIOx_PDOR_t{0x400F'F080},
+	GPIOx_PSOR_t{0x400F'F084},
+	GPIOx_PCOR_t{0x400F'F088},
+	GPIOx_PTOR_t{0x400F'F08C},
+	GPIOx_PDIR_t{0x400F'F090},
+	GPIOx_PDDR_t{0x400F'F094}};
+	
 extern constexpr GPIOx_t GPIOD = {
-    GPIOx_PDOR_t{0x400F'F0C0},
-    GPIOx_PSOR_t{0x400F'F0C4},
-    GPIOx_PCOR_t{0x400F'F0C8},
-    GPIOx_PTOR_t{0x400F'F0CC},
-    GPIOx_PDIR_t{0x400F'F0D0},
-    GPIOx_PDDR_t{0x400F'F0D4}};
-    
+	GPIOx_PDOR_t{0x400F'F0C0},
+	GPIOx_PSOR_t{0x400F'F0C4},
+	GPIOx_PCOR_t{0x400F'F0C8},
+	GPIOx_PTOR_t{0x400F'F0CC},
+	GPIOx_PDIR_t{0x400F'F0D0},
+	GPIOx_PDDR_t{0x400F'F0D4}};
+	
 extern constexpr GPIOx_t GPIOE = {
-    GPIOx_PDOR_t{0x400F'F100},
-    GPIOx_PSOR_t{0x400F'F104},
-    GPIOx_PCOR_t{0x400F'F108},
-    GPIOx_PTOR_t{0x400F'F10C},
-    GPIOx_PDIR_t{0x400F'F110},
-    GPIOx_PDDR_t{0x400F'F114}};
+	GPIOx_PDOR_t{0x400F'F100},
+	GPIOx_PSOR_t{0x400F'F104},
+	GPIOx_PCOR_t{0x400F'F108},
+	GPIOx_PTOR_t{0x400F'F10C},
+	GPIOx_PDIR_t{0x400F'F110},
+	GPIOx_PDDR_t{0x400F'F114}};
 */
 volatile GPIOx_PDOR_t& GPIOA_PDOR = *reinterpret_cast<volatile GPIOx_PDOR_t*> (0x400F'F000);
 volatile GPIOx_PSOR_t& GPIOA_PSOR = *reinterpret_cast<volatile GPIOx_PSOR_t*> (0x400F'F004);

@@ -12,42 +12,42 @@ struct GPIOx_PDOR_t : public Register<std::uint32_t> {
 };
 
 struct GPIOx_PSOR_t : public Register<std::uint32_t> {
-    template <typename... Pins>
-    void set(const Pins... pins) volatile { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+	template <typename... Pins>
+	void set(const Pins... pins) volatile { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 
 struct GPIOx_PCOR_t : public Register<std::uint32_t> {
-    template <typename... Pins>
-    void clear(const Pins... pins) { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+	template <typename... Pins>
+	void clear(const Pins... pins) { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 
 struct GPIOx_PTOR_t : public Register<std::uint32_t> {
-    template <typename... Pins>
-    void toggle(const Pins... pins) { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+	template <typename... Pins>
+	void toggle(const Pins... pins) { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 
 struct GPIOx_PDIR_t : public Register<std::uint32_t> {
-    template <typename... Pins>
-    bool read(const Pins... pins) { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
+	template <typename... Pins>
+	bool read(const Pins... pins) { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
 struct GPIOx_PDDR_t : public Register<std::uint32_t> {
 
-    template <typename... Pins>
-    void set_output(const Pins... pins) {
-        write(read() | util::Bitmask<std::uint32_t>{pins...}.mask); }
-    template <typename... Pins>
-    void set_input(const Pins... pins) {
-        write(read() & ~util::Bitmask<std::uint32_t>{pins...}.mask); }
+	template <typename... Pins>
+	void set_output(const Pins... pins) {
+		write(read() | util::Bitmask<std::uint32_t>{pins...}.mask); }
+	template <typename... Pins>
+	void set_input(const Pins... pins) {
+		write(read() & ~util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 /*
 struct GPIOx_t {
-    const GPIOx_PDOR_t pdor;
-    const GPIOx_PSOR_t psor;
-    const GPIOx_PCOR_t pcor;
-    const GPIOx_PTOR_t ptor;
-    const GPIOx_PDIR_t pdir;
-    const GPIOx_PDDR_t pddr;
+	const GPIOx_PDOR_t pdor;
+	const GPIOx_PSOR_t psor;
+	const GPIOx_PCOR_t pcor;
+	const GPIOx_PTOR_t ptor;
+	const GPIOx_PDIR_t pdir;
+	const GPIOx_PDDR_t pddr;
 };
 
 extern const GPIOx_t GPIOA;

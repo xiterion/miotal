@@ -6,60 +6,60 @@
 namespace platform::wdog {
 
 struct WDOG_STCTRLH_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
-    using Enable_Watchdog = Bitfield<WDOG_STCTRLH_t, 0>;
-    auto WDOGEN() const volatile { return Enable_Watchdog::decode(this); }
-    void WDOGEN(Enable_Watchdog value) volatile { value.update(this); }
-    static constexpr Enable_Watchdog enable_watchdog {true};
-    static constexpr Enable_Watchdog disable_watchdog {false};
+	using bitband_enabled = std::false_type;
+	using Enable_Watchdog = Bitfield<WDOG_STCTRLH_t, 0>;
+	auto WDOGEN() const volatile { return Enable_Watchdog::decode(this); }
+	void WDOGEN(Enable_Watchdog value) volatile { value.update(this); }
+	static constexpr Enable_Watchdog enable_watchdog {true};
+	static constexpr Enable_Watchdog disable_watchdog {false};
 };
 
 struct WDOG_STCTRLL_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_TOVALH_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_TOVALL_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_WINH_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_WINL_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_REFRESH_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_UNLOCK_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
-    void unlock() volatile {
-        write(0xC520);
-        write(0xD928);
-    }
+	using bitband_enabled = std::false_type;
+	void unlock() volatile {
+		write(0xC520);
+		write(0xD928);
+	}
 };
 
 struct WDOG_TMROUTH_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_TMROUTL_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_RSTCNT_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 struct WDOG_PRESC_t : public Register<std::uint16_t> {
-    using bitband_enabled = std::false_type;
+	using bitband_enabled = std::false_type;
 };
 
 extern volatile WDOG_STCTRLH_t& WDOG_STCTRLH;
