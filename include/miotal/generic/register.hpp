@@ -53,6 +53,8 @@ inline constexpr T value(Last last) { return last.value << last.offset; }
 template <typename T>
 class Generic_Register {
 public:
+	const std::uintptr_t addr;
+
 	typedef T reg_t;
 
 	T read() const volatile { return raw(); }
@@ -64,9 +66,11 @@ public:
 	template <typename... Args>
 	void write(Args... args) volatile { write((read() & ~mask<T>(args...)) | value<T>(args...)); }
 
+//	Generic_Register(std::uintptr_t addr) : addr{addr} {};
+
 private:
-	auto& raw() volatile { return *reinterpret_cast<volatile T*>(this); }
-	auto& raw() const volatile { return *reinterpret_cast<const volatile T*>(this); }
+	auto& raw() volatile { return *reinterpret_cast<volatile T*>(addr); }
+	auto& raw() const volatile { return *reinterpret_cast<const volatile T*>(addr); }
 };
 
 } // namespace generic
