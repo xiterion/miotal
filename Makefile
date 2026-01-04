@@ -7,7 +7,7 @@ OBJDIR := build
 .PHONY: $(OBJDIR)
 $(OBJDIR):
 	+@[ -d $@ ] || mkdir -p $@
-	+@$(MAKE) --no-print-directory -C $@ -f $(CURDIR)/Makefile SRCDIR=$(CURDIR) $(MAKECMDGOALS)
+	+@$(MAKE) --no-print-directory -C $@ -f $(CURDIR)/Makefile SRCDIR=$(CURDIR)/src $(MAKECMDGOALS)
 
 # Prevent remaking this file or any other .mk file with the build directory creation rule
 Makefile : ;
@@ -22,10 +22,12 @@ clean:
 
 else
 
+.SECONDEXPANSION:
+
 VPATH = $(SRCDIR)
 
 ifeq (,$(filter test,$(MAKECMDGOALS)))
-PLATFORM := ARM/Cortex/M4/NXP/K2x
+PLATFORM := miotal/ARM/Cortex/M4/NXP/K2x
 else
 PLATFORM := test
 endif
@@ -42,7 +44,8 @@ SIZE      = $(TARGET)size
 
 DIRS :=
 $(foreach D,$(subst /, ,$(PLATFORM)),$(eval DIRS += $(if $(DIRS),$(lastword $(DIRS)$(D)/),$(D)/)))
-PLATFORM_MAKEFILES = $(DIRS:%=$(SRCDIR)/src/%Platform.mk)
+PLATFORM_MAKEFILES = $(DIRS:%=$(SRCDIR)/%Platform.mk)
+DIRS += ./
 
 .PHONY: default
 default: debug
@@ -50,22 +53,22 @@ default: debug
 $(V).SILENT:
 
 NAME      := miotal
-CFLAGS    := -I$(SRCDIR)/include
+CFLAGS    := -I$(SRCDIR)/../include
 CFLAGS    += -ffreestanding -flto -ffunction-sections
-CXXFLAGS  = $(CFLAGS) -std=c++17 -fno-rtti -fno-exceptions -fno-unwind-tables
+CXXFLAGS  = $(CFLAGS) -std=c++23 -fmodules-ts -fno-rtti -fno-exceptions -fno-unwind-tables
 
-CDEPEND   = $(CC) $(CFLAGS) -MM
-CXXDEPEND = $(CXX) $(CXXFLAGS) -MM
+CDEPEND   := $(CC) $(CFLAGS) -MM
+CXXDEPEND := $(CXX) $(CXXFLAGS) -MMD -E
 
-LDSCRIPT  = $(SRCDIR)/src/$(PLATFORM)/platform.ld
+LDSCRIPT  = $(SRCDIR)/$(PLATFORM)/platform.ld
 LDFLAGS   = --specs=nano.specs --specs=nosys.specs $(CPU)
 LDFLAGS   += -flto -T $(LDSCRIPT) -nostartfiles
 LDFLAGS   += -Wl,--gc-sections
 LDLIBS    := -lstdc++
 
-ASOURCES              := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/src/$(D)*.s))
-CSOURCES              := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/src/$(D)*.c))
-CXXSOURCES            := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/src/$(D)*.cpp))
+ASOURCES              := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/$(D)*.s))
+CSOURCES              := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/$(D)*.c))
+CXXSOURCES            := $(foreach D,$(DIRS),$(wildcard $(SRCDIR)/$(D)*.cpp))
 OBJECTS               := $(ASOURCES:%.s=%.o) $(CSOURCES:%.c=%.o) $(CXXSOURCES:%.cpp=%.o)
 OBJECTS               := $(subst $(SRCDIR)/,,$(OBJECTS))
 DEPENDENCY_FILES      := $(OBJECTS:%.o=%.d)
@@ -76,25 +79,20 @@ debug: $(NAME).elf
 
 .PHONY: release
 release: CFLAGS += -O3
-release: $(NAME).a
+release: $(NAME).elf
 
 .PHONY: test
-test: CFLAGS = -I$(SRCDIR)/include
-test: CXXFLAGS = $(CFLAGS) -std=c++17
-test: LDFLAGS = 
+test: CFLAGS   = -I$(SRCDIR)/../include
+test: CXXFLAGS = $(CFLAGS) -std=c++23 -fmodules-ts
+test: LDFLAGS  = 
 test: test.exe
 	./test.exe
 
 test.exe: $(OBJECTS)
-	$(info $(DIRS))
 	@echo LD $@
 	$(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
-$(NAME).a: $(OBJECTS)
-	@echo AR $@
-	$(AR) rcs --plugin=`$(CC) --print-file-name=liblto_plugin.so` $@ $^
-
-$(NAME).elf: main.o $(NAME).a | $(LDSCRIPT)
+$(NAME).elf: $(OBJECTS) | $(LDSCRIPT)
 	@echo LD $@
 	$(LD) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 	$(SIZE) $@
@@ -103,11 +101,11 @@ $(NAME).bin: $(NAME).elf
 	@echo OBJCOPY $@
 	$(OBJCOPY) -O binary $< $@
 
-%.o: %.cpp %.d
+%.o: %.cpp
 	@echo CXX $@
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
-%.o: %.c %.d
+%.o: %.c
 	@echo CC $@
 	$(CC) -c $< -o $@ $(CFLAGS)
 
@@ -115,36 +113,43 @@ $(NAME).bin: $(NAME).elf
 	@echo AS $@
 	$(AS) $< -o $@ $(ASFLAGS)
 
-%.d: %.c
+%.d: %.c | $(CURDIR)/$$(dir %)
 	@echo CDEPEND $@
-	+@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	case "$(dir $*)" in                                                             \
-	  "" | "." | "./")                                                                 \
-	    $(CDEPEND) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@;                       \
-	    ;;                                                                             \
-	  *)                                                                               \
-	    $(CDEPEND) $< | sed -e "s@^\(.*\)\.o:@$(dir $*)\1.d $(dir $*)\1.o:@" > $@;   \
-	    ;;                                                                             \
-	esac
+	$(CDEPEND) $< -MF $@ 1> /dev/null
 
-%.d: %.cpp
+%.d: %.cpp | $(CURDIR)/$$(dir %)
 	@echo CXXDEPEND $@
-	+@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	case "$(dir $*)" in                                                             \
-	  "" | "." | "./")                                                                 \
-	    $(CXXDEPEND) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@;                     \
-	    ;;                                                                             \
-	  *)                                                                               \
-	    $(CXXDEPEND) $< | sed -e "s@^\(.*\)\.o:@$(dir $*)\1.d $(dir $*)\1.o:@" > $@; \
-	    ;;                                                                             \
-	esac
+	$(CXXDEPEND) $< -MF $@ 1> /dev/null
+	# The following script is terrible. I'm sorry. This will likely change
+	# as support for c++ modules grows in gcc. The result of this script
+	# makes object files dependent on the compiled module interface of all
+	# imported modules. The compiled module interface is dependent on the
+	# object file of the interface, and that object is dependent on the
+	# respective source file. Finally, object file names are modified to
+	# have a path corresponding to the path to the source, so names of
+	# source files within the OS and HAL directories do not accidentally
+	# collide with user source names. Module names can still collide, due
+	# to the way C++ modules work.
+	sed -i $@\
+	    -e "/^.PHONY/d" \
+	    -e "/^CXX_IMPORTS/d" \
+	    -e "/.*\.c++m: /d"\
+	    -e "s@$(notdir $*)\.o.*\(:.*$*\.cpp\)@$*.o\1@" \
+	    -e "s@\(.*\.gcm:\)|\( .*\)@\1\2@" \
+	    -e "s@\(\S\+\):\(\S\+\)@\1-\2@g" \
+	    -e "s@$(notdir $*)\.o.*: \(.*\)\.c++m\$$@$*.o: gcm.cache\/\1.gcm@"
 
-$(OBJECTS) $(DEPENDENCY_FILES): Makefile
+.PRECIOUS: %/
+%/:
+	mkdir -p ./$@
 
-include $(PLATFORM_MAKEFILES)
+$(OBJECTS) $(DEPENDENCY_FILES): ../Makefile $(wildcard $(PLATFORM_MAKEFILES))
+
+-include $(PLATFORM_MAKEFILES)
 
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPENDENCY_FILES)
+
 endif
 
 endif
