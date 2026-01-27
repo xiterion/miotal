@@ -3,7 +3,7 @@
 #include <array>
 #include <functional>
 
-#include <miotal/util/bit_manipulation.hpp>
+import miotal.util;
 #include <miotal/ARM/Cortex/M4/NXP/register.hpp>
 
 namespace platform::gpio {
@@ -13,32 +13,32 @@ struct GPIOx_PDOR_t : public Register<std::uint32_t> {
 
 struct GPIOx_PSOR_t : public Register<std::uint32_t> {
 	template <typename... Pins>
-	void set(const Pins... pins) volatile { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+	void set(const Pins... pins) volatile { write(miotal::util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 
 struct GPIOx_PCOR_t : public Register<std::uint32_t> {
 	template <typename... Pins>
-	void clear(const Pins... pins) { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+	void clear(const Pins... pins) { write(miotal::util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 
 struct GPIOx_PTOR_t : public Register<std::uint32_t> {
 	template <typename... Pins>
-	void toggle(const Pins... pins) { write(util::Bitmask<std::uint32_t>{pins...}.mask); }
+	void toggle(const Pins... pins) { write(miotal::util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 
 struct GPIOx_PDIR_t : public Register<std::uint32_t> {
 	template <typename... Pins>
-	bool read(const Pins... pins) { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
+	bool read(const Pins... pins) { return read() & miotal::util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
 struct GPIOx_PDDR_t : public Register<std::uint32_t> {
 
 	template <typename... Pins>
 	void set_output(const Pins... pins) {
-		write(read() | util::Bitmask<std::uint32_t>{pins...}.mask); }
+		write(read() | miotal::util::Bitmask<std::uint32_t>{pins...}.mask); }
 	template <typename... Pins>
 	void set_input(const Pins... pins) {
-		write(read() & ~util::Bitmask<std::uint32_t>{pins...}.mask); }
+		write(read() & ~miotal::util::Bitmask<std::uint32_t>{pins...}.mask); }
 };
 /*
 struct GPIOx_t {

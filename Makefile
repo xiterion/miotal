@@ -45,7 +45,7 @@ SIZE      = $(TARGET)size
 DIRS :=
 $(foreach D,$(subst /, ,$(PLATFORM)),$(eval DIRS += $(if $(DIRS),$(lastword $(DIRS)$(D)/),$(D)/)))
 PLATFORM_MAKEFILES = $(DIRS:%=$(SRCDIR)/%Platform.mk)
-DIRS += ./
+DIRS += ./ miotal/util/
 
 .PHONY: default
 default: debug
@@ -113,13 +113,15 @@ $(NAME).bin: $(NAME).elf
 	@echo AS $@
 	$(AS) $< -o $@ $(ASFLAGS)
 
-%.d: %.c | $(CURDIR)/$$(dir %)
+%.d: %.c
 	@echo CDEPEND $@
-	$(CDEPEND) $< -MF $@ 1> /dev/null
+	+@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	$(CDEPEND) $< -MT $*.o -MF $@ 1> /dev/null
 
-%.d: %.cpp | $(CURDIR)/$$(dir %)
+%.d: %.cpp
 	@echo CXXDEPEND $@
-	$(CXXDEPEND) $< -MF $@ 1> /dev/null
+	+@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	$(CXXDEPEND) $< -MT $*.o -MF $@ 1> /dev/null
 	# The following script is terrible. I'm sorry. This will likely change
 	# as support for c++ modules grows in gcc. The result of this script
 	# makes object files dependent on the compiled module interface of all
@@ -131,17 +133,14 @@ $(NAME).bin: $(NAME).elf
 	# collide with user source names. Module names can still collide, due
 	# to the way C++ modules work.
 	sed -i $@\
-	    -e "/^.PHONY/d" \
-	    -e "/^CXX_IMPORTS/d" \
-	    -e "/.*\.c++m: /d"\
-	    -e "s@$(notdir $*)\.o.*\(:.*$*\.cpp\)@$*.o\1@" \
-	    -e "s@\(.*\.gcm:\)|\( .*\)@\1\2@" \
-	    -e "s@\(\S\+\):\(\S\+\)@\1-\2@g" \
-	    -e "s@$(notdir $*)\.o.*: \(.*\)\.c++m\$$@$*.o: gcm.cache\/\1.gcm@"
-
-.PRECIOUS: %/
-%/:
-	mkdir -p ./$@
+	    -e :a -e'/\\$$/N; s/\\\n//; ta' \
+	    -e '/^.PHONY/d' \
+	    -e '/^CXX_IMPORTS/d' \
+	    -e '/.*\.c++m: /d' \
+	    -e 's@\(.*\.gcm:\)|\( .*\)@\1 $*\.o@' \
+	    -e 's@\(\S\+\):\(\S\+\)@\1-\2@g' \
+	    -e 's@: \(.*\).c++m@: gcm.cache/\1.gcm@'
+	#    -e 's@$(notdir $*)\.o.*: \(.*\)\.c++m\$$@$*.o: gcm.cache\/\1.gcm@'
 
 $(OBJECTS) $(DEPENDENCY_FILES): ../Makefile $(wildcard $(PLATFORM_MAKEFILES))
 

@@ -1,5 +1,7 @@
 #include <miotal/ARM/Cortex/M4/NXP/K2x/gpio.hpp>
 
+//import miotal.util;
+
 namespace platform::gpio {
 /*
 extern constexpr GPIOx_t GPIOA = {

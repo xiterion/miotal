@@ -1,6 +1,6 @@
 #pragma once
 
-#include <miotal/util/bit_manipulation.hpp>
+import miotal.util;
 #include <miotal/ARM/Cortex/M4/NXP/register.hpp>
 
 namespace platform::port {
@@ -125,7 +125,7 @@ struct PORTx_GPCLR : public PORTx_GPCyR {
 	template <typename... Args>
 	std::enable_if_t<
 		std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCLR>...>::value>
-	set(const util::Bitmask<std::uint32_t> bits, const Args... args) volatile {
+	set(const miotal::util::Bitmask<std::uint32_t> bits, const Args... args) volatile {
 		write((bits.mask << 16) | value(args...));
 	}
 };
@@ -134,26 +134,26 @@ struct PORTx_GPCHR : public PORTx_GPCyR {
 	template <typename... Args>
 	std::enable_if_t<
 		std::conjunction<std::is_base_of<typename Args::register_t, PORTx_GPCHR>...>::value>
-	set(util::Bitmask<std::uint32_t> bits, Args... args) volatile {
+	set(miotal::util::Bitmask<std::uint32_t> bits, Args... args) volatile {
 		write(bits.mask | value(args...));
 	}
 };
 
 struct PORTx_ISFR : public Register<std::uint32_t> {
 	template <typename... Bits>
-	void clear(Bits... bits) volatile { write(util::Bitmask<std::uint32_t>{bits...}.mask); }
+	void clear(Bits... bits) volatile { write(miotal::util::Bitmask<std::uint32_t>{bits...}.mask); }
 	template <typename... Bits>
-	bool is_set(Bits... pins) const volatile { return read() & util::Bitmask<std::uint32_t>{pins...}.mask; }
+	bool is_set(Bits... pins) const volatile { return read() & miotal::util::Bitmask<std::uint32_t>{pins...}.mask; }
 };
 
 struct PORTx_DFER : public Register<std::uint32_t> {
 	template <typename... Bits>
 	void enable_filter_for_pins(Bits... bits) volatile {
-		write(read() | util::Bitmask<std::uint32_t>{bits...}.mask);
+		write(read() | miotal::util::Bitmask<std::uint32_t>{bits...}.mask);
 	}
 	template <typename... Bits>
 	void disable_filter_for_pins(Bits... bits) volatile {
-		write(read() & ~util::Bitmask<std::uint32_t>{bits...}.mask);
+		write(read() & ~miotal::util::Bitmask<std::uint32_t>{bits...}.mask);
 	}
 };
 
