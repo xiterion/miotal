@@ -39,3 +39,6 @@
 # Eclipse build directories
 /Debug/
 /Release/
+
+# Makefile build directory
+/build/
