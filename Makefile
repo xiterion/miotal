@@ -139,7 +139,7 @@ $(NAME).bin: $(NAME).elf
 	    -e '/.*\.c++m: /d' \
 	    -e 's@\(.*\.gcm:\)|\( .*\)@\1 $*\.o@' \
 	    -e 's@\(\S\+\):\(\S\+\)@\1-\2@g' \
-	    -e 's@: \(.*\).c++m@: gcm.cache/\1.gcm@'
+	    -e 's@\(\S\+\).c++m@gcm.cache/\1.gcm@g'
 	#    -e 's@$(notdir $*)\.o.*: \(.*\)\.c++m\$$@$*.o: gcm.cache\/\1.gcm@'
 
 $(OBJECTS) $(DEPENDENCY_FILES): ../Makefile $(wildcard $(PLATFORM_MAKEFILES))
