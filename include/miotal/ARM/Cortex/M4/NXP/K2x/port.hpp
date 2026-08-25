@@ -1,7 +1,7 @@
 #pragma once
 
-import miotal.util;
 #include <miotal/ARM/Cortex/M4/NXP/register.hpp>
+import miotal.util;
 
 namespace platform::port {
 
