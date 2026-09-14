@@ -1,13 +1,22 @@
 .SUFFIXES:
 
-ifeq (,$(filter build,$(notdir $(CURDIR))))
+ifneq ($(MIOTAL_BUILD_ENV),docker)
 
 OBJDIR := build
+IMAGE := miotal-toolchain:15.1.1-1
 
 .PHONY: $(OBJDIR)
-$(OBJDIR):
-	+@[ -d $@ ] || mkdir -p $@
-	+@$(MAKE) --no-print-directory -C $@ -f $(CURDIR)/Makefile SRCDIR=$(CURDIR)/src $(MAKECMDGOALS)
+$(OBJDIR): toolchain-image
+	+@[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
+	+@docker run --rm -u "$$(id -u):$$(id -g)" \
+		-w "/workspace" -v "$$(pwd):/workspace" \
+		-e MAKEFLAGS="$(filter-out -j% --jobserver%,$$MAKEFLAGS)" \
+		-e MIOTAL_BUILD_ENV=docker -e MAKEFLAGS="$$MAKEFLAGS" $(IMAGE) \
+		$(MAKE) -j$$(nproc) --no-print-directory -C $(OBJDIR) -f ../Makefile SRCDIR=../src $(MAKECMDGOALS)
+
+.PHONY: toolchain-image
+toolchain-image:
+	+@docker image inspect $(IMAGE) > /dev/null 2>&1 || docker build -t $(IMAGE) .
 
 # Prevent remaking this file or any other .mk file with the build directory creation rule
 Makefile : ;
@@ -21,8 +30,6 @@ clean:
 	rm -rf $(OBJDIR)
 
 else
-
-.SECONDEXPANSION:
 
 VPATH = $(SRCDIR)
 
@@ -57,8 +64,8 @@ CFLAGS    := -I$(SRCDIR)/../include
 CFLAGS    += -ffreestanding -flto -ffunction-sections
 CXXFLAGS  = $(CFLAGS) -std=c++23 -fmodules-ts -fno-rtti -fno-exceptions -fno-unwind-tables
 
-CDEPEND   := $(CC) $(CFLAGS) -MM
-CXXDEPEND := $(CXX) $(CXXFLAGS) -MMD -E
+CDEPEND   = $(CC) $(CFLAGS) -MM
+CXXDEPEND = $(CXX) $(CXXFLAGS) -MMD -E
 
 LDSCRIPT  = $(SRCDIR)/$(PLATFORM)/platform.ld
 LDFLAGS   = --specs=nano.specs --specs=nosys.specs $(CPU)
@@ -136,10 +143,10 @@ $(NAME).bin: $(NAME).elf
 	    -e :a -e'/\\$$/N; s/\\\n//; ta' \
 	    -e '/^.PHONY/d' \
 	    -e '/^CXX_IMPORTS/d' \
-	    -e '/.*\.c++m: /d' \
+	    -e '/.*\.c++-module: /d' \
 	    -e 's@\(.*\.gcm:\)|\( .*\)@\1 $*\.o@' \
 	    -e 's@\(\S\+\):\(\S\+\)@\1-\2@g' \
-	    -e 's@\(\S\+\).c++m@gcm.cache/\1.gcm@g'
+	    -e 's@\(\S\+\).c++-module@gcm.cache/\1.gcm@g'
 
 $(OBJECTS) $(DEPENDENCY_FILES): ../Makefile $(wildcard $(PLATFORM_MAKEFILES))
 
